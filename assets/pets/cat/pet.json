@@ -1,0 +1,42 @@
+{
+  "name": "cat",
+  "displayName": "小猫助手",
+  "defaultState": "idle",
+  "size": {
+    "width": 160,
+    "height": 160
+  },
+  "animations": {
+    "idle": {
+      "file": "idle.webp",
+      "fps": 8,
+      "loop": true
+    },
+    "happy": {
+      "file": "happy.webp",
+      "fps": 12,
+      "loop": false,
+      "duration": 1800
+    },
+    "sleep": {
+      "file": "sleep.webp",
+      "fps": 6,
+      "loop": true
+    },
+    "think": {
+      "file": "think.webp",
+      "fps": 8,
+      "loop": true
+    },
+    "talk": {
+      "file": "talk.webp",
+      "fps": 12,
+      "loop": true
+    },
+    "drag": {
+      "file": "drag.webp",
+      "fps": 10,
+      "loop": true
+    }
+  }
+}
