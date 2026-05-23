@@ -17,7 +17,7 @@ interface SpeechBubbleProps {
 }
 
 export function truncateBubbleText(text: string): string {
-  return text.length > 180 ? `${text.slice(0, 180)}...` : text;
+  return text;
 }
 
 export default function SpeechBubble({ bubble, onClose }: SpeechBubbleProps) {
@@ -27,7 +27,7 @@ export default function SpeechBubble({ bubble, onClose }: SpeechBubbleProps) {
 
   return (
     <div className={`speech-bubble speech-bubble-${bubble.type}`} role="status">
-      <span>{truncateBubbleText(bubble.text)}</span>
+      <span className="speech-bubble-text">{truncateBubbleText(bubble.text)}</span>
       {bubble.closable ? (
         <button type="button" aria-label="Close message" onClick={onClose}>
           <X size={13} />
