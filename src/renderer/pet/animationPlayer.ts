@@ -8,7 +8,6 @@ export const stateToAnimation: Record<PetState, string | null> = {
   talk: "talk",
   drag: "drag",
   look: "look",
-  startle: "startle",
   annoyed: "annoyed",
   drop: "drop",
   shy: "shy",

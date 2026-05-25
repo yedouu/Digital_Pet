@@ -1,4 +1,5 @@
 import type { PetEvent, PetState } from "./petTypes";
+import { interactionEffects } from "./petConfig";
 
 export function petReducer(state: PetState, event: PetEvent): PetState {
   if (event.type === "HIDE") {
@@ -20,8 +21,6 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
           return "drag";
         case "MOUSE_NEAR":
           return "look";
-        case "MOUSE_FAST_MOVE":
-          return "startle";
         case "CLICK_CHAIN":
           return "annoyed";
         case "HOVER_TIMEOUT":
@@ -41,8 +40,6 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
           return "idle";
         case "DRAG_START":
           return "drag";
-        case "MOUSE_FAST_MOVE":
-          return "startle";
         case "CLICK_CHAIN":
           return "annoyed";
         case "USER_MESSAGE":
@@ -79,8 +76,6 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
           return "idle";
         case "DRAG_START":
           return "drag";
-        case "MOUSE_FAST_MOVE":
-          return "startle";
         case "RIGHT_CLICK":
           return "menu";
         default:
@@ -104,7 +99,7 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
     case "drag": {
       switch (event.type) {
         case "DRAG_END":
-          return "drop";
+          return interactionEffects.dropWobble ? "drop" : "idle";
         default:
           return state;
       }
@@ -114,8 +109,6 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
       switch (event.type) {
         case "MOUSE_LEAVE":
           return "idle";
-        case "MOUSE_FAST_MOVE":
-          return "startle";
         case "CLICK":
           return "happy";
         case "CLICK_CHAIN":
@@ -131,7 +124,6 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
       }
     }
 
-    case "startle":
     case "annoyed":
     case "drop":
     case "shy": {

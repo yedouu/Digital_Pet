@@ -43,7 +43,6 @@ function isInteraction(event: PetEvent): boolean {
     "DRAG_END",
     "MOUSE_NEAR",
     "MOUSE_LEAVE",
-    "MOUSE_FAST_MOVE",
     "CLICK_CHAIN",
     "HOVER_TIMEOUT",
     "USER_MESSAGE",
@@ -101,11 +100,6 @@ export default function App() {
 
         case "MOUSE_NEAR":
         case "MOUSE_LEAVE":
-          dispatch(event);
-          return;
-
-        case "MOUSE_FAST_MOVE":
-          showBubble("Whoa!", "system", 2400);
           dispatch(event);
           return;
 

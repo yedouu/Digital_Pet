@@ -71,16 +71,6 @@
       "loop": true,
       "sequence": [0, 1, 2, 1, 0, 3]
     },
-    "startle": {
-      "path": "startle",
-      "framePrefix": "startle",
-      "frameCount": 6,
-      "frameExtension": "png",
-      "fps": 14,
-      "loop": false,
-      "duration": 900,
-      "sequence": [0, 1, 2, 3, 4, 5]
-    },
     "annoyed": {
       "path": "annoyed",
       "framePrefix": "annoyed",

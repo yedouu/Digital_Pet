@@ -1,6 +1,6 @@
 import { type MouseEvent, type PointerEvent, useEffect, useRef, useState } from "react";
 import { getAnimationDuration, getAnimationFps, getAnimationFrameUrls, getAnimationUrl } from "../pet/animationPlayer";
-import { defaultPetConfig } from "../pet/petConfig";
+import { defaultPetConfig, interactionEffects } from "../pet/petConfig";
 import type { PetEvent, PetState } from "../pet/petTypes";
 import { loadPetPosition, savePetPosition } from "../services/storageService";
 import type { ContextMenuPosition } from "./ContextMenu";
@@ -62,7 +62,6 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
   const draggingRef = useRef(false);
   const hoverTimerRef = useRef<number | null>(null);
   const clickBurstRef = useRef<{ count: number; lastTime: number }>({ count: 0, lastTime: 0 });
-  const lastMoveRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const clickTimerRef = useRef<number | null>(null);
   const [imageFailed, setImageFailed] = useState(false);
   const [frameIndex, setFrameIndex] = useState(0);
@@ -132,13 +131,18 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
 
   function startHoverTimer() {
     clearHoverTimer();
-    hoverTimerRef.current = window.setTimeout(() => onEvent({ type: "HOVER_TIMEOUT" }), 1800);
+
+    if (interactionEffects.hoverShy) {
+      hoverTimerRef.current = window.setTimeout(() => onEvent({ type: "HOVER_TIMEOUT" }), 1800);
+    }
   }
 
-  function handlePointerEnter(event: PointerEvent<HTMLDivElement>) {
-    lastMoveRef.current = { x: event.screenX, y: event.screenY, time: Date.now() };
+  function handlePointerEnter() {
     startHoverTimer();
-    onEvent({ type: "MOUSE_NEAR" });
+
+    if (interactionEffects.lookAtMouse) {
+      onEvent({ type: "MOUSE_NEAR" });
+    }
   }
 
   async function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -164,21 +168,6 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
     const start = pointerStartRef.current;
 
     if (!start) {
-      const lastMove = lastMoveRef.current;
-      const now = Date.now();
-
-      if (lastMove) {
-        const distance = Math.hypot(event.screenX - lastMove.x, event.screenY - lastMove.y);
-        const elapsed = Math.max(now - lastMove.time, 1);
-        const speed = distance / elapsed;
-
-        if (speed > 1.35) {
-          clearHoverTimer();
-          onEvent({ type: "MOUSE_FAST_MOVE" });
-        }
-      }
-
-      lastMoveRef.current = { x: event.screenX, y: event.screenY, time: now };
       return;
     }
 
@@ -229,7 +218,7 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
     const count = now - burst.lastTime < 900 ? burst.count + 1 : 1;
     clickBurstRef.current = { count, lastTime: now };
 
-    if (count >= 3) {
+    if (interactionEffects.clickChainAnnoyed && count >= 3) {
       if (clickTimerRef.current) {
         window.clearTimeout(clickTimerRef.current);
         clickTimerRef.current = null;
@@ -269,7 +258,6 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
     clearHoverTimer();
     pointerStartRef.current = null;
     draggingRef.current = false;
-    lastMoveRef.current = null;
     onEvent({ type: "MOUSE_LEAVE" });
   }
 

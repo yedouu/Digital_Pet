@@ -19,6 +19,14 @@ export const randomReplies = [
   "When stuck, start with the smallest next step."
 ];
 
+export const interactionEffects = {
+  lookAtMouse: true,
+  fastMoveStartle: false,
+  clickChainAnnoyed: true,
+  dropWobble: true,
+  hoverShy: true
+} as const;
+
 export function pickRandom<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
 }
