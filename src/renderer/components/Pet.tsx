@@ -60,6 +60,9 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
     scaleFactor: number;
   } | null>(null);
   const draggingRef = useRef(false);
+  const hoverTimerRef = useRef<number | null>(null);
+  const clickBurstRef = useRef<{ count: number; lastTime: number }>({ count: 0, lastTime: 0 });
+  const lastMoveRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const clickTimerRef = useRef<number | null>(null);
   const [imageFailed, setImageFailed] = useState(false);
   const [frameIndex, setFrameIndex] = useState(0);
@@ -120,6 +123,24 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
     return null;
   }
 
+  function clearHoverTimer() {
+    if (hoverTimerRef.current) {
+      window.clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+  }
+
+  function startHoverTimer() {
+    clearHoverTimer();
+    hoverTimerRef.current = window.setTimeout(() => onEvent({ type: "HOVER_TIMEOUT" }), 1800);
+  }
+
+  function handlePointerEnter(event: PointerEvent<HTMLDivElement>) {
+    lastMoveRef.current = { x: event.screenX, y: event.screenY, time: Date.now() };
+    startHoverTimer();
+    onEvent({ type: "MOUSE_NEAR" });
+  }
+
   async function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.button !== 0) {
       return;
@@ -143,6 +164,21 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
     const start = pointerStartRef.current;
 
     if (!start) {
+      const lastMove = lastMoveRef.current;
+      const now = Date.now();
+
+      if (lastMove) {
+        const distance = Math.hypot(event.screenX - lastMove.x, event.screenY - lastMove.y);
+        const elapsed = Math.max(now - lastMove.time, 1);
+        const speed = distance / elapsed;
+
+        if (speed > 1.35) {
+          clearHoverTimer();
+          onEvent({ type: "MOUSE_FAST_MOVE" });
+        }
+      }
+
+      lastMoveRef.current = { x: event.screenX, y: event.screenY, time: now };
       return;
     }
 
@@ -152,6 +188,7 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
 
     if (!draggingRef.current && distance > 5) {
       draggingRef.current = true;
+      clearHoverTimer();
       onEvent({ type: "DRAG_START" });
     }
 
@@ -187,6 +224,22 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
   }
 
   function handleClickIntent() {
+    const now = Date.now();
+    const burst = clickBurstRef.current;
+    const count = now - burst.lastTime < 900 ? burst.count + 1 : 1;
+    clickBurstRef.current = { count, lastTime: now };
+
+    if (count >= 3) {
+      if (clickTimerRef.current) {
+        window.clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = null;
+      }
+
+      clickBurstRef.current = { count: 0, lastTime: 0 };
+      onEvent({ type: "CLICK_CHAIN" });
+      return;
+    }
+
     if (clickTimerRef.current) {
       window.clearTimeout(clickTimerRef.current);
       clickTimerRef.current = null;
@@ -204,11 +257,20 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
     event.preventDefault();
     pointerStartRef.current = null;
     draggingRef.current = false;
+    clearHoverTimer();
     onContextMenuPosition({
       x: Math.min(Math.max(event.clientX, 6), window.innerWidth - 134),
       y: Math.min(Math.max(event.clientY, 6), window.innerHeight - 158)
     });
     onEvent({ type: "RIGHT_CLICK" });
+  }
+
+  function handlePointerLeave() {
+    clearHoverTimer();
+    pointerStartRef.current = null;
+    draggingRef.current = false;
+    lastMoveRef.current = null;
+    onEvent({ type: "MOUSE_LEAVE" });
   }
 
   return (
@@ -218,6 +280,8 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
       onContextMenu={handleContextMenu}
     >
       {animationUrl && !imageFailed ? (

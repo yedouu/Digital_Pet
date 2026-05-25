@@ -18,6 +18,14 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
           return "think";
         case "DRAG_START":
           return "drag";
+        case "MOUSE_NEAR":
+          return "look";
+        case "MOUSE_FAST_MOVE":
+          return "startle";
+        case "CLICK_CHAIN":
+          return "annoyed";
+        case "HOVER_TIMEOUT":
+          return "shy";
         case "RIGHT_CLICK":
           return "menu";
         case "IDLE_TIMEOUT":
@@ -33,6 +41,10 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
           return "idle";
         case "DRAG_START":
           return "drag";
+        case "MOUSE_FAST_MOVE":
+          return "startle";
+        case "CLICK_CHAIN":
+          return "annoyed";
         case "USER_MESSAGE":
           return "think";
         case "RIGHT_CLICK":
@@ -50,6 +62,8 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
           return "idle";
         case "DRAG_START":
           return "drag";
+        case "MOUSE_NEAR":
+          return "look";
         case "RIGHT_CLICK":
           return "menu";
         default:
@@ -65,6 +79,8 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
           return "idle";
         case "DRAG_START":
           return "drag";
+        case "MOUSE_FAST_MOVE":
+          return "startle";
         case "RIGHT_CLICK":
           return "menu";
         default:
@@ -88,7 +104,45 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
     case "drag": {
       switch (event.type) {
         case "DRAG_END":
+          return "drop";
+        default:
+          return state;
+      }
+    }
+
+    case "look": {
+      switch (event.type) {
+        case "MOUSE_LEAVE":
           return "idle";
+        case "MOUSE_FAST_MOVE":
+          return "startle";
+        case "CLICK":
+          return "happy";
+        case "CLICK_CHAIN":
+          return "annoyed";
+        case "HOVER_TIMEOUT":
+          return "shy";
+        case "DRAG_START":
+          return "drag";
+        case "RIGHT_CLICK":
+          return "menu";
+        default:
+          return state;
+      }
+    }
+
+    case "startle":
+    case "annoyed":
+    case "drop":
+    case "shy": {
+      switch (event.type) {
+        case "ANIMATION_END":
+        case "MOUSE_LEAVE":
+          return "idle";
+        case "DRAG_START":
+          return "drag";
+        case "RIGHT_CLICK":
+          return "menu";
         default:
           return state;
       }

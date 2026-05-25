@@ -5,6 +5,11 @@ export type PetState =
   | "think"
   | "talk"
   | "drag"
+  | "look"
+  | "startle"
+  | "annoyed"
+  | "drop"
+  | "shy"
   | "menu"
   | "hidden";
 
@@ -16,6 +21,11 @@ export type PetEvent =
   | { type: "MENU_CLOSE" }
   | { type: "DRAG_START" }
   | { type: "DRAG_END" }
+  | { type: "MOUSE_NEAR" }
+  | { type: "MOUSE_LEAVE" }
+  | { type: "MOUSE_FAST_MOVE" }
+  | { type: "CLICK_CHAIN" }
+  | { type: "HOVER_TIMEOUT" }
   | { type: "USER_MESSAGE"; payload: { text: string } }
   | { type: "AI_REPLY"; payload: { text: string } }
   | { type: "AI_ERROR"; payload: { message: string } }

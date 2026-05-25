@@ -9,11 +9,14 @@ import { resetIdleTimer, shouldEnterSleep } from "./pet/idleTimer";
 import { clickReplies, pickRandom, randomReplies } from "./pet/petConfig";
 import { petReducer } from "./pet/petStateMachine";
 import type { ChatMode, PetEvent } from "./pet/petTypes";
+import { getAutostartEnabled, setAutostartEnabled } from "./services/autostartService";
 import { getPetReply, testDeepSeekConnection } from "./services/chatService";
 import { loadAppSettings, saveAppSettings } from "./services/storageService";
 import { speak } from "./services/ttsService";
 
 const sleepTimeoutMs = 5 * 60 * 1000;
+const replyVisibleMs = 60 * 1000;
+const chatVisibleMs = 60 * 1000;
 
 function createBubble(
   text: string,
@@ -38,6 +41,11 @@ function isInteraction(event: PetEvent): boolean {
     "RIGHT_CLICK",
     "DRAG_START",
     "DRAG_END",
+    "MOUSE_NEAR",
+    "MOUSE_LEAVE",
+    "MOUSE_FAST_MOVE",
+    "CLICK_CHAIN",
+    "HOVER_TIMEOUT",
     "USER_MESSAGE",
     "MENU_CLOSE",
     "HIDE",
@@ -51,6 +59,8 @@ export default function App() {
   const [chatOpen, setChatOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [chatMode, setChatMode] = useState<ChatMode>(appConfig.defaultChatMode);
+  const [autostartEnabled, setAutostartEnabledState] = useState(false);
+  const [autostartPending, setAutostartPending] = useState(false);
   const [deepseekApiKey, setDeepseekApiKey] = useState(() => {
     const stored = loadAppSettings().deepseekApiKey;
     return stored || appConfig.deepseekApiKey;
@@ -89,6 +99,26 @@ export default function App() {
           dispatch(event);
           return;
 
+        case "MOUSE_NEAR":
+        case "MOUSE_LEAVE":
+          dispatch(event);
+          return;
+
+        case "MOUSE_FAST_MOVE":
+          showBubble("Whoa!", "system", 2400);
+          dispatch(event);
+          return;
+
+        case "CLICK_CHAIN":
+          showBubble("Hey, easy!", "system", 3200);
+          dispatch(event);
+          return;
+
+        case "HOVER_TIMEOUT":
+          showBubble("You're making me shy.", "system", 3200);
+          dispatch(event);
+          return;
+
         case "USER_MESSAGE":
           showBubble("Let me think...", "thinking", 0, false);
           dispatch(event);
@@ -96,12 +126,12 @@ export default function App() {
             .then((reply) => {
               latestReplyRef.current = reply;
               setReplyText(reply);
-              showBubble(reply, "normal", 0, true);
+              showBubble(reply, "normal", replyVisibleMs, true);
               dispatch({ type: "AI_REPLY", payload: { text: reply } });
             })
             .catch((error: unknown) => {
               const message = error instanceof Error ? error.message : "I could not reply right now.";
-              showBubble(message, "error", 0, true);
+              showBubble(message, "error", replyVisibleMs, true);
               dispatch({ type: "AI_ERROR", payload: { message } });
             });
           return;
@@ -109,12 +139,12 @@ export default function App() {
         case "AI_REPLY":
           latestReplyRef.current = event.payload.text;
           setReplyText(event.payload.text);
-          showBubble(event.payload.text, "normal", 0, true);
+          showBubble(event.payload.text, "normal", replyVisibleMs, true);
           dispatch(event);
           return;
 
         case "AI_ERROR":
-          showBubble(event.payload.message, "error", 0, true);
+          showBubble(event.payload.message, "error", replyVisibleMs, true);
           dispatch(event);
           return;
 
@@ -143,6 +173,29 @@ export default function App() {
   useEffect(() => {
     saveAppSettings({ deepseekApiKey });
   }, [deepseekApiKey]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getAutostartEnabled().then((enabled) => {
+      if (!cancelled) {
+        setAutostartEnabledState(enabled);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chatOpen) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => setChatOpen(false), chatVisibleMs);
+    return () => window.clearTimeout(timer);
+  }, [chatOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -238,6 +291,19 @@ export default function App() {
     sendEvent({ type: "USER_MESSAGE", payload: { text } });
   }
 
+  async function handleAutostartChange(enabled: boolean) {
+    setAutostartPending(true);
+
+    try {
+      const nextEnabled = await setAutostartEnabled(enabled);
+      setAutostartEnabledState(nextEnabled);
+    } catch {
+      showBubble("Could not update startup setting.", "error", 4000);
+    } finally {
+      setAutostartPending(false);
+    }
+  }
+
   return (
     <main className={`app app-${state}`} onPointerDown={() => state === "menu" && sendEvent({ type: "MENU_CLOSE" })}>
       <SpeechBubble bubble={bubble} onClose={() => setBubble(null)} />
@@ -260,8 +326,11 @@ export default function App() {
         open={settingsOpen}
         chatMode={chatMode}
         deepseekApiKey={deepseekApiKey}
+        autostartEnabled={autostartEnabled}
+        autostartPending={autostartPending}
         onChatModeChange={setChatMode}
         onDeepseekApiKeyChange={setDeepseekApiKey}
+        onAutostartChange={handleAutostartChange}
         onClose={() => setSettingsOpen(false)}
       />
     </main>

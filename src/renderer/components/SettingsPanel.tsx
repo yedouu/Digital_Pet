@@ -5,8 +5,11 @@ interface SettingsPanelProps {
   open: boolean;
   chatMode: ChatMode;
   deepseekApiKey: string;
+  autostartEnabled: boolean;
+  autostartPending: boolean;
   onChatModeChange: (mode: ChatMode) => void;
   onDeepseekApiKeyChange: (apiKey: string) => void;
+  onAutostartChange: (enabled: boolean) => void;
   onClose: () => void;
 }
 
@@ -14,8 +17,11 @@ export default function SettingsPanel({
   open,
   chatMode,
   deepseekApiKey,
+  autostartEnabled,
+  autostartPending,
   onChatModeChange,
   onDeepseekApiKeyChange,
+  onAutostartChange,
   onClose
 }: SettingsPanelProps) {
   if (!open) {
@@ -46,6 +52,15 @@ export default function SettingsPanel({
           autoComplete="off"
           onChange={(event) => onDeepseekApiKeyChange(event.target.value)}
         />
+      </label>
+      <label className="settings-check">
+        <input
+          type="checkbox"
+          checked={autostartEnabled}
+          disabled={autostartPending}
+          onChange={(event) => onAutostartChange(event.target.checked)}
+        />
+        <span>Start Bubu when Windows starts</span>
       </label>
     </section>
   );

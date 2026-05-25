@@ -7,6 +7,7 @@
     "dev": "npm run prepare-assets && vite --host 127.0.0.1",
     "prepare-assets": "node scripts/prepare-assets.mjs",
     "slice:bubu": "node scripts/slice-bubu-sheets.mjs",
+    "generate:interactions": "node scripts/generate-interaction-frames.mjs",
     "build": "npm run prepare-assets && tsc && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "tauri": "tauri",
@@ -15,6 +16,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-autostart": "^2.5.1",
     "@vitejs/plugin-react": "^5.0.0",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
