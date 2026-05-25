@@ -1,9 +1,11 @@
 import { appConfig } from "../config/appConfig";
-import type { ChatMode } from "../pet/petTypes";
+import type { ChatMode, TimeZoneMode } from "../pet/petTypes";
 import { getLocalReply } from "./localReplyService";
+import { createTimeContext } from "./timeService";
 
 interface PetReplyOptions {
   deepseekApiKey?: string;
+  timeZoneMode?: TimeZoneMode;
 }
 
 interface DeepSeekResponse {
@@ -18,22 +20,24 @@ interface DeepSeekResponse {
 }
 
 export async function getPetReply(input: string, mode: ChatMode, options: PetReplyOptions = {}): Promise<string> {
+  const timeZoneMode = options.timeZoneMode ?? "south-africa";
+
   if (mode === "ai") {
     const apiKey = options.deepseekApiKey?.trim();
 
     if (apiKey) {
       try {
-        return await getDeepSeekReply(input, apiKey);
+        return await getDeepSeekReply(input, apiKey, timeZoneMode);
       } catch {
-        return `DeepSeek is unavailable, so I switched to local mode: ${getLocalReply(input)}`;
+        return `DeepSeek is unavailable, so I switched to local mode: ${getLocalReply(input, timeZoneMode)}`;
       }
     }
 
-    return `No DeepSeek API key is configured, so I switched to local mode: ${getLocalReply(input)}`;
+    return `No DeepSeek API key is configured, so I switched to local mode: ${getLocalReply(input, timeZoneMode)}`;
   }
 
   await new Promise((resolve) => window.setTimeout(resolve, 450));
-  return getLocalReply(input);
+  return getLocalReply(input, timeZoneMode);
 }
 
 export async function testDeepSeekConnection(apiKey: string): Promise<boolean> {
@@ -42,14 +46,14 @@ export async function testDeepSeekConnection(apiKey: string): Promise<boolean> {
   }
 
   try {
-    await getDeepSeekReply("Reply with only the word OK.", apiKey);
+    await getDeepSeekReply("Reply with only the word OK.", apiKey, "south-africa");
     return true;
   } catch {
     return false;
   }
 }
 
-async function getDeepSeekReply(input: string, apiKey: string): Promise<string> {
+async function getDeepSeekReply(input: string, apiKey: string, timeZoneMode: TimeZoneMode): Promise<string> {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 20000);
 
@@ -66,7 +70,7 @@ async function getDeepSeekReply(input: string, apiKey: string): Promise<string> 
           {
             role: "system",
             content:
-              "You are a cute desktop pet assistant. Reply in concise, friendly English suitable for a small speech bubble."
+              `You are a cute desktop pet assistant. Reply in concise, friendly English suitable for a small speech bubble. ${createTimeContext(timeZoneMode)} Use this time context when the user asks about the current time.`
           },
           {
             role: "user",

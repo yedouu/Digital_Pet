@@ -1,9 +1,15 @@
 import type { PetEvent, PetState } from "./petTypes";
 import { interactionEffects } from "./petConfig";
 
+const timeIdleStates: PetState[] = ["idle", "wakeup", "energetic", "sleepy"];
+
 export function petReducer(state: PetState, event: PetEvent): PetState {
   if (event.type === "HIDE") {
     return "hidden";
+  }
+
+  if (event.type === "TIME_IDLE_STATE" && timeIdleStates.includes(state)) {
+    return event.payload.state;
   }
 
   if (state === "hidden" && event.type === "SHOW") {
@@ -11,7 +17,10 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
   }
 
   switch (state) {
-    case "idle": {
+    case "idle":
+    case "wakeup":
+    case "energetic":
+    case "sleepy": {
       switch (event.type) {
         case "CLICK":
           return "happy";

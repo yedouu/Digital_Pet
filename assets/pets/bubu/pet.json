@@ -16,6 +16,33 @@
       "loop": true,
       "sequence": [0, 1, 2, 1, 0, 3, 0]
     },
+    "wakeup": {
+      "path": "wakeup",
+      "framePrefix": "wakeup",
+      "frameCount": 2,
+      "frameExtension": "png",
+      "fps": 2,
+      "loop": true,
+      "sequence": [0, 1, 0]
+    },
+    "energetic": {
+      "path": "energetic",
+      "framePrefix": "energetic",
+      "frameCount": 2,
+      "frameExtension": "png",
+      "fps": 3,
+      "loop": true,
+      "sequence": [0, 1, 0]
+    },
+    "sleepy": {
+      "path": "sleepy",
+      "framePrefix": "sleepy",
+      "frameCount": 2,
+      "frameExtension": "png",
+      "fps": 2,
+      "loop": true,
+      "sequence": [0, 1, 0]
+    },
     "happy": {
       "path": "happy",
       "framePrefix": "happy",

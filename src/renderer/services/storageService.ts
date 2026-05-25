@@ -1,3 +1,6 @@
+import { defaultTimeZoneMode } from "../pet/petConfig";
+import type { TimeZoneMode } from "../pet/petTypes";
+
 export interface PetPosition {
   x: number;
   y: number;
@@ -5,6 +8,7 @@ export interface PetPosition {
 
 export interface AppSettings {
   deepseekApiKey: string;
+  timeZoneMode: TimeZoneMode;
 }
 
 const storageKey = "desktop-pet-mvp";
@@ -39,7 +43,8 @@ export function loadAppSettings(): AppSettings {
   const data = getStoredData();
 
   return {
-    deepseekApiKey: data.settings?.deepseekApiKey ?? ""
+    deepseekApiKey: data.settings?.deepseekApiKey ?? "",
+    timeZoneMode: data.settings?.timeZoneMode ?? defaultTimeZoneMode
   };
 }
 

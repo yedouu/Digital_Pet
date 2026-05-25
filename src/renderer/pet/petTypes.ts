@@ -1,5 +1,8 @@
 export type PetState =
   | "idle"
+  | "wakeup"
+  | "energetic"
+  | "sleepy"
   | "happy"
   | "sleep"
   | "think"
@@ -14,6 +17,7 @@ export type PetState =
 
 export type PetEvent =
   | { type: "APP_START" }
+  | { type: "TIME_IDLE_STATE"; payload: { state: TimeIdleState } }
   | { type: "CLICK" }
   | { type: "DOUBLE_CLICK" }
   | { type: "RIGHT_CLICK" }
@@ -35,6 +39,10 @@ export type PetEvent =
   | { type: "ANIMATION_END" };
 
 export type ChatMode = "local" | "ai";
+
+export type TimeZoneMode = "south-africa" | "china";
+
+export type TimeIdleState = "wakeup" | "energetic" | "sleepy";
 
 export interface PetAnimation {
   file?: string;

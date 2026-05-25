@@ -9,16 +9,28 @@ const canvas = 256;
 
 const sets = [
   {
+    action: "wakeup",
+    source: "sleep",
+    frames: ["sleep_00.png", "sleep_01.png"],
+    overlays: ["morning", "morning"]
+  },
+  {
+    action: "energetic",
+    source: "happy",
+    frames: ["happy_01.png", "happy_02.png"],
+    overlays: ["sparkle", "sparkle"]
+  },
+  {
+    action: "sleepy",
+    source: "sleep",
+    frames: ["sleep_00.png", "sleep_02.png"],
+    overlays: ["sleepy", "sleepy"]
+  },
+  {
     action: "look",
     source: "idle",
     frames: ["idle_00.png", "idle_03.png", "idle_05.png", "idle_03.png", "idle_00.png", "idle_04.png"],
     overlays: ["eyes-right", "eyes-left", "eyes-right", "eyes-left", "eyes-right", "eyes-center"]
-  },
-  {
-    action: "startle",
-    source: "drag",
-    frames: ["drag_00.png", "drag_01.png", "drag_02.png", "drag_04.png", "drag_03.png", "drag_05.png"],
-    overlays: ["sweat", "sweat", "surprise", "surprise", "sweat", "none"]
   },
   {
     action: "annoyed",
@@ -75,6 +87,27 @@ function createOverlay(kind) {
 
   if (kind === "eyes-center") {
     parts.push(circle(104, 104, 5, "#2a1a14"), circle(150, 104, 5, "#2a1a14"));
+  }
+
+  if (kind === "morning") {
+    parts.push(
+      `<circle cx="54" cy="54" r="14" fill="#ffd36b" opacity="0.9"/>`,
+      `<path d="M54 24 V36 M54 72 V84 M24 54 H36 M72 54 H84 M34 34 L42 42 M74 34 L66 42" fill="none" stroke="#f4b84a" stroke-width="4" stroke-linecap="round" opacity="0.86"/>`
+    );
+  }
+
+  if (kind === "sparkle") {
+    parts.push(
+      `<path d="M64 48 L70 62 L84 68 L70 74 L64 88 L58 74 L44 68 L58 62Z" fill="#ffd86f" opacity="0.9"/>`,
+      `<path d="M184 72 L188 82 L198 86 L188 90 L184 100 L180 90 L170 86 L180 82Z" fill="#8fd6ff" opacity="0.9"/>`
+    );
+  }
+
+  if (kind === "sleepy") {
+    parts.push(
+      `<path d="M172 54 H198 L174 82 H200" fill="none" stroke="#5b3427" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>`,
+      `<path d="M200 28 H218 L202 48 H220" fill="none" stroke="#5b3427" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.56"/>`
+    );
   }
 
   if (kind === "sweat") {

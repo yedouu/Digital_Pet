@@ -5,18 +5,19 @@ import Pet, { closePetWindow, hidePetWindow } from "./components/Pet";
 import SettingsPanel from "./components/SettingsPanel";
 import SpeechBubble, { type BubbleType, type SpeechBubbleData } from "./components/SpeechBubble";
 import { appConfig } from "./config/appConfig";
-import { resetIdleTimer, shouldEnterSleep } from "./pet/idleTimer";
+import { resetIdleTimer } from "./pet/idleTimer";
 import { clickReplies, pickRandom, randomReplies } from "./pet/petConfig";
 import { petReducer } from "./pet/petStateMachine";
-import type { ChatMode, PetEvent } from "./pet/petTypes";
+import type { ChatMode, PetEvent, PetState, TimeZoneMode } from "./pet/petTypes";
 import { getAutostartEnabled, setAutostartEnabled } from "./services/autostartService";
 import { getPetReply, testDeepSeekConnection } from "./services/chatService";
 import { loadAppSettings, saveAppSettings } from "./services/storageService";
+import { createTimeContext, getTimeIdleState } from "./services/timeService";
 import { speak } from "./services/ttsService";
 
-const sleepTimeoutMs = 5 * 60 * 1000;
 const replyVisibleMs = 60 * 1000;
 const chatVisibleMs = 60 * 1000;
+const timeIdleStates: PetState[] = ["idle", "wakeup", "energetic", "sleepy"];
 
 function createBubble(
   text: string,
@@ -53,15 +54,17 @@ function isInteraction(event: PetEvent): boolean {
 }
 
 export default function App() {
-  const [state, dispatch] = useReducer(petReducer, "idle");
+  const initialSettings = loadAppSettings();
+  const [state, dispatch] = useReducer(petReducer, getTimeIdleState(initialSettings.timeZoneMode));
   const [bubble, setBubble] = useState<SpeechBubbleData | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [chatMode, setChatMode] = useState<ChatMode>(appConfig.defaultChatMode);
+  const [timeZoneMode, setTimeZoneMode] = useState<TimeZoneMode>(initialSettings.timeZoneMode);
   const [autostartEnabled, setAutostartEnabledState] = useState(false);
   const [autostartPending, setAutostartPending] = useState(false);
   const [deepseekApiKey, setDeepseekApiKey] = useState(() => {
-    const stored = loadAppSettings().deepseekApiKey;
+    const stored = initialSettings.deepseekApiKey;
     return stored || appConfig.deepseekApiKey;
   });
   const [replyText, setReplyText] = useState("");
@@ -116,7 +119,7 @@ export default function App() {
         case "USER_MESSAGE":
           showBubble("Let me think...", "thinking", 0, false);
           dispatch(event);
-          getPetReply(event.payload.text, chatMode, { deepseekApiKey })
+          getPetReply(event.payload.text, chatMode, { deepseekApiKey, timeZoneMode })
             .then((reply) => {
               latestReplyRef.current = reply;
               setReplyText(reply);
@@ -143,8 +146,7 @@ export default function App() {
           return;
 
         case "IDLE_TIMEOUT":
-          showBubble("Zzz...", "system", 0, false);
-          dispatch(event);
+          dispatch({ type: "TIME_IDLE_STATE", payload: { state: getTimeIdleState(timeZoneMode) } });
           return;
 
         case "HIDE":
@@ -161,12 +163,12 @@ export default function App() {
           dispatch(event);
       }
     },
-    [chatMode, deepseekApiKey, showBubble, state]
+    [chatMode, deepseekApiKey, showBubble, state, timeZoneMode]
   );
 
   useEffect(() => {
-    saveAppSettings({ deepseekApiKey });
-  }, [deepseekApiKey]);
+    saveAppSettings({ deepseekApiKey, timeZoneMode });
+  }, [deepseekApiKey, timeZoneMode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -228,13 +230,19 @@ export default function App() {
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      if (state === "idle" && shouldEnterSleep(sleepTimeoutMs)) {
-        sendEvent({ type: "IDLE_TIMEOUT" });
+      if (timeIdleStates.includes(state)) {
+        dispatch({ type: "TIME_IDLE_STATE", payload: { state: getTimeIdleState(timeZoneMode) } });
       }
-    }, 5000);
+    }, 60 * 1000);
 
     return () => window.clearInterval(timer);
-  }, [sendEvent, state]);
+  }, [state, timeZoneMode]);
+
+  useEffect(() => {
+    if (timeIdleStates.includes(state)) {
+      dispatch({ type: "TIME_IDLE_STATE", payload: { state: getTimeIdleState(timeZoneMode) } });
+    }
+  }, [state, timeZoneMode]);
 
   useEffect(() => {
     if (state !== "talk" || !replyText) {
@@ -298,6 +306,11 @@ export default function App() {
     }
   }
 
+  function handleTimeZoneModeChange(mode: TimeZoneMode) {
+    setTimeZoneMode(mode);
+    showBubble(createTimeContext(mode), "system", 0, true);
+  }
+
   return (
     <main className={`app app-${state}`} onPointerDown={() => state === "menu" && sendEvent({ type: "MENU_CLOSE" })}>
       <SpeechBubble bubble={bubble} onClose={() => setBubble(null)} />
@@ -319,10 +332,12 @@ export default function App() {
       <SettingsPanel
         open={settingsOpen}
         chatMode={chatMode}
+        timeZoneMode={timeZoneMode}
         deepseekApiKey={deepseekApiKey}
         autostartEnabled={autostartEnabled}
         autostartPending={autostartPending}
         onChatModeChange={setChatMode}
+        onTimeZoneModeChange={handleTimeZoneModeChange}
         onDeepseekApiKeyChange={setDeepseekApiKey}
         onAutostartChange={handleAutostartChange}
         onClose={() => setSettingsOpen(false)}

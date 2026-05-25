@@ -1,5 +1,5 @@
 import bubuConfig from "../../../assets/pets/bubu/pet.json";
-import type { PetConfig } from "./petTypes";
+import type { PetConfig, TimeZoneMode } from "./petTypes";
 
 export const defaultPetConfig = bubuConfig as PetConfig;
 
@@ -20,12 +20,14 @@ export const randomReplies = [
 ];
 
 export const interactionEffects = {
-  lookAtMouse: true,
+  lookAtMouse: false,
   fastMoveStartle: false,
   clickChainAnnoyed: true,
   dropWobble: true,
   hoverShy: true
 } as const;
+
+export const defaultTimeZoneMode: TimeZoneMode = "south-africa";
 
 export function pickRandom<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];

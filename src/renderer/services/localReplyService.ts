@@ -1,5 +1,12 @@
-export function getLocalReply(input: string): string {
+import type { TimeZoneMode } from "../pet/petTypes";
+import { createTimeContext } from "./timeService";
+
+export function getLocalReply(input: string, timeZoneMode: TimeZoneMode): string {
   const normalized = input.toLowerCase();
+
+  if (normalized.includes("time") || normalized.includes("clock") || normalized.includes("几点") || normalized.includes("时间")) {
+    return createTimeContext(timeZoneMode);
+  }
 
   if (normalized.includes("hello") || normalized.includes("hi")) {
     return "Hello! I'm right here on your desktop.";

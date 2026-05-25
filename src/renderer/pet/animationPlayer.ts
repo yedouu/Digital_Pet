@@ -2,6 +2,9 @@ import type { PetConfig, PetState } from "./petTypes";
 
 export const stateToAnimation: Record<PetState, string | null> = {
   idle: "idle",
+  wakeup: "wakeup",
+  energetic: "energetic",
+  sleepy: "sleepy",
   happy: "happy",
   sleep: "sleep",
   think: "think",

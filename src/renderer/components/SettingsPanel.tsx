@@ -1,13 +1,15 @@
 import { X } from "lucide-react";
-import type { ChatMode } from "../pet/petTypes";
+import type { ChatMode, TimeZoneMode } from "../pet/petTypes";
 
 interface SettingsPanelProps {
   open: boolean;
   chatMode: ChatMode;
+  timeZoneMode: TimeZoneMode;
   deepseekApiKey: string;
   autostartEnabled: boolean;
   autostartPending: boolean;
   onChatModeChange: (mode: ChatMode) => void;
+  onTimeZoneModeChange: (mode: TimeZoneMode) => void;
   onDeepseekApiKeyChange: (apiKey: string) => void;
   onAutostartChange: (enabled: boolean) => void;
   onClose: () => void;
@@ -16,10 +18,12 @@ interface SettingsPanelProps {
 export default function SettingsPanel({
   open,
   chatMode,
+  timeZoneMode,
   deepseekApiKey,
   autostartEnabled,
   autostartPending,
   onChatModeChange,
+  onTimeZoneModeChange,
   onDeepseekApiKeyChange,
   onAutostartChange,
   onClose
@@ -41,6 +45,13 @@ export default function SettingsPanel({
         <select value={chatMode} onChange={(event) => onChatModeChange(event.target.value as ChatMode)}>
           <option value="ai">DeepSeek API</option>
           <option value="local">Local fallback</option>
+        </select>
+      </label>
+      <label>
+        Bubu time
+        <select value={timeZoneMode} onChange={(event) => onTimeZoneModeChange(event.target.value as TimeZoneMode)}>
+          <option value="south-africa">South Africa time</option>
+          <option value="china">China time</option>
         </select>
       </label>
       <label>

@@ -56,6 +56,18 @@ select {
   animation: pet-happy 0.55s ease-in-out infinite;
 }
 
+.pet-wakeup {
+  animation: pet-wakeup 2.2s ease-in-out infinite;
+}
+
+.pet-energetic {
+  animation: pet-energetic 1.2s ease-in-out infinite;
+}
+
+.pet-sleepy {
+  animation: pet-sleepy 2.6s ease-in-out infinite;
+}
+
 .pet-sleep {
   animation: pet-sleep 2.4s ease-in-out infinite;
 }
@@ -70,10 +82,6 @@ select {
 
 .pet-look {
   animation: pet-look 1s ease-in-out infinite;
-}
-
-.pet-startle {
-  animation: pet-startle 0.22s ease-in-out infinite;
 }
 
 .pet-annoyed {
@@ -392,6 +400,36 @@ select {
   }
 }
 
+@keyframes pet-wakeup {
+  0%,
+  100% {
+    transform: translateY(3px) scaleY(0.98);
+  }
+  50% {
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes pet-energetic {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pet-sleepy {
+  0%,
+  100% {
+    transform: translateY(4px) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(7px) rotate(1deg);
+  }
+}
+
 @keyframes pet-sleep {
   0%,
   100% {
@@ -439,16 +477,6 @@ select {
   }
   50% {
     transform: translateX(4px);
-  }
-}
-
-@keyframes pet-startle {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-10px) scale(1.05);
   }
 }
 
