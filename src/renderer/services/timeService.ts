@@ -24,7 +24,8 @@ export function getBubuTimeInfo(mode: TimeZoneMode, now = new Date()): BubuTimeI
     new Intl.DateTimeFormat("en-US", {
       timeZone: zone.timeZone,
       hour: "2-digit",
-      hour12: false
+      hour12: false,
+      hourCycle: "h23"
     }).format(now)
   );
 
@@ -39,15 +40,15 @@ export function getBubuTimeInfo(mode: TimeZoneMode, now = new Date()): BubuTimeI
 export function getTimeIdleState(mode: TimeZoneMode, now = new Date()): TimeIdleState {
   const { hour } = getBubuTimeInfo(mode, now);
 
-  if (hour >= 5 && hour < 8) {
+  if (hour >= 22 || hour < 6) {
+    return "sleepy";
+  }
+
+  if (hour >= 6 && hour < 8) {
     return "wakeup";
   }
 
-  if (hour >= 8 && hour < 19) {
-    return "energetic";
-  }
-
-  return "sleepy";
+  return "energetic";
 }
 
 export function createTimeContext(mode: TimeZoneMode): string {

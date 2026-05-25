@@ -304,6 +304,12 @@ select {
   height: 32px;
 }
 
+.settings-header button {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+}
+
 .chat-box button:hover,
 .settings-header button:hover {
   background: #e7f0f2;
@@ -346,20 +352,31 @@ select {
   position: absolute;
   left: 14px;
   right: 14px;
+  top: 10px;
   bottom: 56px;
   z-index: 7;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  max-height: calc(100vh - 66px);
   padding: 10px;
   border: 1px solid rgba(42, 55, 65, 0.14);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.98);
   box-shadow: 0 14px 34px rgba(33, 43, 52, 0.22);
+  overflow-y: auto;
 }
 
 .settings-header {
+  position: sticky;
+  top: -10px;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 9px;
+  margin: -10px -10px 1px;
+  padding: 10px 10px 8px;
+  background: rgba(255, 255, 255, 0.98);
   font-size: 13px;
 }
 
