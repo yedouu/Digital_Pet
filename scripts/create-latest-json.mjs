@@ -68,7 +68,7 @@ function escapeRegExp(value) {
 }
 
 function getDefaultReleaseNotes(currentVersion) {
-  if (currentVersion === "0.1.2") {
+  if (currentVersion === "0.1.0" || currentVersion === "0.1.2") {
     return [
       "Bubu Desktop Pet 0.1.2",
       "",
