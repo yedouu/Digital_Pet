@@ -29,14 +29,14 @@ const sets = [
   {
     action: "syncKeyboard",
     source: "think",
-    frames: ["think_00.png", "think_01.png", "think_04.png", "think_01.png"],
-    overlays: ["keyboard-tap-left", "keyboard-tap-mid", "keyboard-tap-right", "keyboard-tap-mid"]
+    frames: ["think_00.png", "think_04.png"],
+    overlays: ["sync-scene-left", "sync-scene-right"]
   },
   {
     action: "syncMouse",
     source: "think",
-    frames: ["think_00.png", "think_01.png", "think_05.png", "think_01.png"],
-    overlays: ["mouse-move-left", "mouse-move-mid", "mouse-move-right", "mouse-move-mid"]
+    frames: ["think_01.png", "think_05.png"],
+    overlays: ["sync-scene-mouse-left", "sync-scene-mouse-right"]
   },
   {
     action: "look",
@@ -122,34 +122,27 @@ function createOverlay(kind) {
     );
   }
 
-  if (kind === "keyboard-tap-left" || kind === "keyboard-tap-mid" || kind === "keyboard-tap-right") {
-    const offset = kind === "keyboard-tap-left" ? -14 : kind === "keyboard-tap-right" ? 14 : 0;
-    const leftPawY = kind === "keyboard-tap-left" ? 171 : 178;
-    const rightPawY = kind === "keyboard-tap-right" ? 171 : 178;
+  if (kind === "sync-scene-left" || kind === "sync-scene-right") {
+    const pawX = kind === "sync-scene-left" ? 82 : 108;
     parts.push(
       deskSurface(),
-      seatedLegs(offset),
-      flowerPad(45, 194),
-      keyboard(92, 186, kind),
-      arm(72, 154, 86 + offset, leftPawY),
-      arm(146, 154, 126 + offset, rightPawY),
-      paw(86 + offset, leftPawY, kind === "keyboard-tap-left"),
-      paw(126 + offset, rightPawY, kind === "keyboard-tap-right")
+      keyboard(82, 190),
+      flowerPad(46, 190),
+      bird(196, 178),
+      `<ellipse cx="${pawX}" cy="172" rx="15" ry="10" fill="#f1c2a1" stroke="#5b3427" stroke-width="3" opacity="0.98"/>`,
+      `<path d="M60 176 C70 170 78 170 88 176" fill="none" stroke="#5b3427" stroke-width="3" stroke-linecap="round" opacity="0.72"/>`
     );
   }
 
-  if (kind === "mouse-move-left" || kind === "mouse-move-mid" || kind === "mouse-move-right") {
-    const mouseX = kind === "mouse-move-left" ? 42 : kind === "mouse-move-right" ? 68 : 55;
-    const bodyOffset = kind === "mouse-move-left" ? -4 : kind === "mouse-move-right" ? 4 : 0;
+  if (kind === "sync-scene-mouse-left" || kind === "sync-scene-mouse-right") {
+    const pawX = kind === "sync-scene-mouse-left" ? 42 : 56;
     parts.push(
       deskSurface(),
-      seatedLegs(bodyOffset),
-      flowerPad(53, 194),
-      keyboard(106, 188, "keyboard-idle"),
-      arm(70, 154, mouseX, 175),
-      arm(148, 156, 132, 181),
-      paw(mouseX, 175, true),
-      paw(132, 181, false)
+      keyboard(90, 190),
+      flowerPad(46, 190),
+      bird(200, 178),
+      `<ellipse cx="${pawX}" cy="174" rx="16" ry="10" fill="#f1c2a1" stroke="#5b3427" stroke-width="3" opacity="0.98"/>`,
+      `<path d="M${pawX - 7} 172 C${pawX} 164 ${pawX + 12} 164 ${pawX + 19} 172" fill="none" stroke="#5b3427" stroke-width="3" stroke-linecap="round" opacity="0.72"/>`
     );
   }
 
@@ -210,33 +203,19 @@ function flowerPad(x, y) {
   return `<g opacity="0.95">${petals.join("")}<circle cx="${x}" cy="${y}" r="8" fill="#ffe3ec" stroke="#d7839e" stroke-width="3"/></g>`;
 }
 
-function keyboard(x, y, activeKind = "keyboard-idle") {
+function keyboard(x, y) {
   const keys = [];
 
   for (let row = 0; row < 3; row += 1) {
     for (let col = 0; col < 5; col += 1) {
-      const isLeftHit = activeKind === "keyboard-tap-left" && row === 1 && col === 1;
-      const isRightHit = activeKind === "keyboard-tap-right" && row === 1 && col === 3;
-      const isMidHit = activeKind === "keyboard-tap-mid" && row === 2 && col === 2;
-      const fill = isLeftHit || isRightHit || isMidHit ? "#ff7f9f" : (row + col) % 2 === 0 ? "#f3a7bb" : "#d7e6ff";
-      const keyY = y + row * 11 + (isLeftHit || isRightHit || isMidHit ? 2 : 0);
-      keys.push(`<rect x="${x + col * 16}" y="${keyY}" width="11" height="8" rx="2" fill="${fill}" opacity="0.94"/>`);
+      const fill = (row + col) % 2 === 0 ? "#f3a7bb" : "#d7e6ff";
+      keys.push(`<rect x="${x + col * 16}" y="${y + row * 11}" width="11" height="8" rx="2" fill="${fill}" opacity="0.92"/>`);
     }
   }
 
   return `<g><rect x="${x - 8}" y="${y - 7}" width="98" height="46" rx="8" fill="#f2f6fb" stroke="#5b3427" stroke-width="4" opacity="0.96"/>${keys.join("")}<rect x="${x + 20}" y="${y + 33}" width="42" height="6" rx="3" fill="#bacbd6" opacity="0.95"/></g>`;
 }
 
-function seatedLegs(offset) {
-  return `<g opacity="0.96"><path d="M86 ${214 + Math.abs(offset) * 0.1} C102 202 112 202 124 216" fill="none" stroke="#5b3427" stroke-width="5" stroke-linecap="round"/><path d="M132 ${216 - Math.abs(offset) * 0.1} C146 202 158 204 170 218" fill="none" stroke="#5b3427" stroke-width="5" stroke-linecap="round"/><ellipse cx="${103 + offset * 0.2}" cy="219" rx="16" ry="7" fill="#f1c2a1" stroke="#5b3427" stroke-width="3"/><ellipse cx="${153 + offset * 0.2}" cy="219" rx="16" ry="7" fill="#f1c2a1" stroke="#5b3427" stroke-width="3"/></g>`;
-}
-
-function arm(fromX, fromY, toX, toY) {
-  const controlX = (fromX + toX) / 2;
-  const controlY = Math.min(fromY, toY) - 14;
-  return `<path d="M${fromX} ${fromY} Q${controlX} ${controlY} ${toX} ${toY}" fill="none" stroke="#5b3427" stroke-width="5" stroke-linecap="round" opacity="0.74"/>`;
-}
-
-function paw(x, y, pressed) {
-  return `<ellipse cx="${x}" cy="${y}" rx="${pressed ? 17 : 15}" ry="${pressed ? 9 : 10}" fill="#f1c2a1" stroke="#5b3427" stroke-width="3" opacity="0.98"/>`;
+function bird(x, y) {
+  return `<g opacity="0.96"><path d="M${x - 22} ${y + 24} C${x - 26} ${y} ${x + 1} ${y - 14} ${x + 17} ${y + 4} C${x + 29} ${y + 18} ${x + 13} ${y + 34} ${x - 8} ${y + 34} C${x - 15} ${y + 34} ${x - 20} ${y + 30} ${x - 22} ${y + 24}Z" fill="#a9df91" stroke="#5b3427" stroke-width="3"/><circle cx="${x + 6}" cy="${y + 3}" r="3" fill="#2a1a14"/><path d="M${x + 15} ${y + 6} L${x + 28} ${y + 10} L${x + 15} ${y + 15}Z" fill="#ffe074" stroke="#5b3427" stroke-width="2"/></g>`;
 }
