@@ -19,6 +19,10 @@ export async function checkForAppUpdate(onStatus: (status: UpdateStatus) => void
     update = await check({ timeout: 15000 });
   } catch (error) {
     console.info("Update check failed:", error);
+    onStatus({
+      type: "error",
+      message: "Update check failed. Please check the GitHub Release files."
+    });
     return;
   }
 

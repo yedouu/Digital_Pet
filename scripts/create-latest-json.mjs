@@ -41,12 +41,15 @@ writeFileSync(outputPath, `${JSON.stringify(latestJson, null, 2)}\n`);
 console.log(`Created ${outputPath}`);
 
 function findWindowsArtifact(directories) {
+  const versionPattern = new RegExp(`${escapeRegExp(version)}.*\\.(exe|msi)$`, "i");
+
   for (const directory of directories) {
     if (!existsSync(directory)) {
       continue;
     }
 
-    const fileName = readdirSync(directory).find((file) => file.endsWith(".exe") || file.endsWith(".msi"));
+    const installers = readdirSync(directory).filter((file) => file.endsWith(".exe") || file.endsWith(".msi"));
+    const fileName = installers.find((file) => versionPattern.test(file));
 
     if (fileName) {
       return {
@@ -56,5 +59,9 @@ function findWindowsArtifact(directories) {
     }
   }
 
-  throw new Error("No Windows installer found. Run npm.cmd run tauri:build first.");
+  throw new Error(`No Windows installer found for version ${version}. Run npm.cmd run tauri:build first.`);
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
