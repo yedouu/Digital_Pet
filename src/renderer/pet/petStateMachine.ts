@@ -28,6 +28,10 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
           return "think";
         case "DRAG_START":
           return "drag";
+        case "INPUT_SYNC_KEYBOARD":
+          return "syncKeyboard";
+        case "INPUT_SYNC_MOUSE":
+          return "syncMouse";
         case "MOUSE_NEAR":
           return "look";
         case "CLICK_CHAIN":
@@ -109,6 +113,24 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
       switch (event.type) {
         case "DRAG_END":
           return interactionEffects.dropWobble ? "drop" : "idle";
+        default:
+          return state;
+      }
+    }
+
+    case "syncKeyboard":
+    case "syncMouse": {
+      switch (event.type) {
+        case "ANIMATION_END":
+          return "idle";
+        case "INPUT_SYNC_KEYBOARD":
+          return "syncKeyboard";
+        case "INPUT_SYNC_MOUSE":
+          return "syncMouse";
+        case "DRAG_START":
+          return "drag";
+        case "RIGHT_CLICK":
+          return "menu";
         default:
           return state;
       }

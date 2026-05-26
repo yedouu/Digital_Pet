@@ -42,6 +42,8 @@ function isInteraction(event: PetEvent): boolean {
     "RIGHT_CLICK",
     "DRAG_START",
     "DRAG_END",
+    "INPUT_SYNC_KEYBOARD",
+    "INPUT_SYNC_MOUSE",
     "MOUSE_NEAR",
     "MOUSE_LEAVE",
     "CLICK_CHAIN",
@@ -61,6 +63,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [chatMode, setChatMode] = useState<ChatMode>(appConfig.defaultChatMode);
   const [timeZoneMode, setTimeZoneMode] = useState<TimeZoneMode>(initialSettings.timeZoneMode);
+  const [inputSyncEnabled, setInputSyncEnabled] = useState(initialSettings.inputSyncEnabled);
   const [autostartEnabled, setAutostartEnabledState] = useState(false);
   const [autostartPending, setAutostartPending] = useState(false);
   const [deepseekApiKey, setDeepseekApiKey] = useState(() => {
@@ -98,6 +101,11 @@ export default function App() {
 
         case "RIGHT_CLICK":
         case "MENU_CLOSE":
+          dispatch(event);
+          return;
+
+        case "INPUT_SYNC_KEYBOARD":
+        case "INPUT_SYNC_MOUSE":
           dispatch(event);
           return;
 
@@ -167,8 +175,45 @@ export default function App() {
   );
 
   useEffect(() => {
-    saveAppSettings({ deepseekApiKey, timeZoneMode });
-  }, [deepseekApiKey, timeZoneMode]);
+    saveAppSettings({ deepseekApiKey, inputSyncEnabled, timeZoneMode });
+  }, [deepseekApiKey, inputSyncEnabled, timeZoneMode]);
+
+  useEffect(() => {
+    if (!inputSyncEnabled) {
+      return;
+    }
+
+    let lastKeyboardAt = 0;
+    let lastMouseAt = 0;
+
+    function handleKeyDown() {
+      const now = Date.now();
+
+      if (now - lastKeyboardAt > 280) {
+        lastKeyboardAt = now;
+        sendEvent({ type: "INPUT_SYNC_KEYBOARD" });
+      }
+    }
+
+    function handleMouseInput() {
+      const now = Date.now();
+
+      if (now - lastMouseAt > 360) {
+        lastMouseAt = now;
+        sendEvent({ type: "INPUT_SYNC_MOUSE" });
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("pointerdown", handleMouseInput);
+    window.addEventListener("pointermove", handleMouseInput);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("pointerdown", handleMouseInput);
+      window.removeEventListener("pointermove", handleMouseInput);
+    };
+  }, [inputSyncEnabled, sendEvent]);
 
   useEffect(() => {
     let cancelled = false;
@@ -336,10 +381,12 @@ export default function App() {
         deepseekApiKey={deepseekApiKey}
         autostartEnabled={autostartEnabled}
         autostartPending={autostartPending}
+        inputSyncEnabled={inputSyncEnabled}
         onChatModeChange={setChatMode}
         onTimeZoneModeChange={handleTimeZoneModeChange}
         onDeepseekApiKeyChange={setDeepseekApiKey}
         onAutostartChange={handleAutostartChange}
+        onInputSyncChange={setInputSyncEnabled}
         onClose={() => setSettingsOpen(false)}
       />
     </main>

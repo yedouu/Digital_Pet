@@ -27,6 +27,18 @@ const sets = [
     overlays: ["sleepy", "sleepy"]
   },
   {
+    action: "syncKeyboard",
+    source: "think",
+    frames: ["think_01.png", "think_04.png"],
+    overlays: ["keyboard-left", "keyboard-right"]
+  },
+  {
+    action: "syncMouse",
+    source: "happy",
+    frames: ["happy_00.png", "happy_05.png"],
+    overlays: ["mouse-left", "mouse-right"]
+  },
+  {
     action: "look",
     source: "idle",
     frames: ["idle_00.png", "idle_03.png", "idle_05.png", "idle_03.png", "idle_00.png", "idle_04.png"],
@@ -107,6 +119,33 @@ function createOverlay(kind) {
     parts.push(
       `<path d="M172 54 H198 L174 82 H200" fill="none" stroke="#5b3427" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>`,
       `<path d="M200 28 H218 L202 48 H220" fill="none" stroke="#5b3427" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.56"/>`
+    );
+  }
+
+  if (kind === "keyboard-left" || kind === "keyboard-right") {
+    const pawX = kind === "keyboard-left" ? 92 : 106;
+    parts.push(
+      `<rect x="60" y="180" width="136" height="38" rx="8" fill="#f7fbff" stroke="#5b3427" stroke-width="4" opacity="0.94"/>`,
+      `<rect x="74" y="190" width="14" height="10" rx="2" fill="#f3a7bb" opacity="0.9"/>`,
+      `<rect x="96" y="190" width="14" height="10" rx="2" fill="#d6e6ff" opacity="0.9"/>`,
+      `<rect x="118" y="190" width="14" height="10" rx="2" fill="#f3a7bb" opacity="0.9"/>`,
+      `<rect x="140" y="190" width="14" height="10" rx="2" fill="#d6e6ff" opacity="0.9"/>`,
+      `<rect x="162" y="190" width="14" height="10" rx="2" fill="#f3a7bb" opacity="0.9"/>`,
+      `<rect x="92" y="205" width="72" height="8" rx="3" fill="#c8d8e4" opacity="0.95"/>`,
+      `<ellipse cx="${pawX}" cy="176" rx="16" ry="10" fill="#f1c2a1" stroke="#5b3427" stroke-width="3" opacity="0.96"/>`
+    );
+  }
+
+  if (kind === "mouse-left" || kind === "mouse-right") {
+    const mouseX = kind === "mouse-left" ? 166 : 176;
+    parts.push(
+      `<rect x="64" y="184" width="84" height="28" rx="8" fill="#f7fbff" stroke="#5b3427" stroke-width="4" opacity="0.9"/>`,
+      `<circle cx="82" cy="198" r="6" fill="#f3a7bb" opacity="0.9"/>`,
+      `<circle cx="102" cy="198" r="6" fill="#f3a7bb" opacity="0.9"/>`,
+      `<circle cx="122" cy="198" r="6" fill="#f3a7bb" opacity="0.9"/>`,
+      `<path d="M148 198 C158 186 170 184 182 190 C194 196 194 214 180 220 C166 226 152 218 148 198Z" fill="#dff3dc" stroke="#5b3427" stroke-width="4" opacity="0.94"/>`,
+      `<path d="M${mouseX} 189 V215" stroke="#8fcf8c" stroke-width="4" stroke-linecap="round" opacity="0.8"/>`,
+      `<ellipse cx="${mouseX}" cy="176" rx="15" ry="10" fill="#f1c2a1" stroke="#5b3427" stroke-width="3" opacity="0.96"/>`
     );
   }
 

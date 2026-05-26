@@ -8,6 +8,8 @@ export type PetState =
   | "think"
   | "talk"
   | "drag"
+  | "syncKeyboard"
+  | "syncMouse"
   | "look"
   | "annoyed"
   | "drop"
@@ -24,6 +26,8 @@ export type PetEvent =
   | { type: "MENU_CLOSE" }
   | { type: "DRAG_START" }
   | { type: "DRAG_END" }
+  | { type: "INPUT_SYNC_KEYBOARD" }
+  | { type: "INPUT_SYNC_MOUSE" }
   | { type: "MOUSE_NEAR" }
   | { type: "MOUSE_LEAVE" }
   | { type: "CLICK_CHAIN" }
