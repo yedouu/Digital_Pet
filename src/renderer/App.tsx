@@ -11,6 +11,7 @@ import { petReducer } from "./pet/petStateMachine";
 import type { ChatMode, PetEvent, PetState, TimeZoneMode } from "./pet/petTypes";
 import { getAutostartEnabled, setAutostartEnabled } from "./services/autostartService";
 import { getPetReply, testDeepSeekConnection } from "./services/chatService";
+import { listenNativeInputSync, setNativeInputSyncEnabled } from "./services/inputSyncService";
 import { loadAppSettings, saveAppSettings } from "./services/storageService";
 import { createTimeContext, getTimeIdleState } from "./services/timeService";
 import { speak } from "./services/ttsService";
@@ -179,41 +180,30 @@ export default function App() {
   }, [deepseekApiKey, inputSyncEnabled, timeZoneMode]);
 
   useEffect(() => {
-    if (!inputSyncEnabled) {
-      return;
-    }
+    setNativeInputSyncEnabled(inputSyncEnabled).catch(() => {
+      showBubble("Input sync is unavailable on this device.", "error", 4000);
+    });
+  }, [inputSyncEnabled, showBubble]);
 
-    let lastKeyboardAt = 0;
-    let lastMouseAt = 0;
+  useEffect(() => {
+    let unlisten: (() => void) | null = null;
+    let cancelled = false;
 
-    function handleKeyDown() {
-      const now = Date.now();
-
-      if (now - lastKeyboardAt > 280) {
-        lastKeyboardAt = now;
-        sendEvent({ type: "INPUT_SYNC_KEYBOARD" });
+    listenNativeInputSync(sendEvent).then((nextUnlisten) => {
+      if (cancelled) {
+        nextUnlisten();
+        return;
       }
-    }
 
-    function handleMouseInput() {
-      const now = Date.now();
-
-      if (now - lastMouseAt > 360) {
-        lastMouseAt = now;
-        sendEvent({ type: "INPUT_SYNC_MOUSE" });
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("pointerdown", handleMouseInput);
-    window.addEventListener("pointermove", handleMouseInput);
+      unlisten = nextUnlisten;
+    });
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("pointerdown", handleMouseInput);
-      window.removeEventListener("pointermove", handleMouseInput);
+      cancelled = true;
+      unlisten?.();
+      setNativeInputSyncEnabled(false).catch(() => {});
     };
-  }, [inputSyncEnabled, sendEvent]);
+  }, [sendEvent]);
 
   useEffect(() => {
     let cancelled = false;
