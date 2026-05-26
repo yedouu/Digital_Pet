@@ -9,7 +9,6 @@ export interface PetPosition {
 export interface AppSettings {
   deepseekApiKey: string;
   timeZoneMode: TimeZoneMode;
-  inputSyncEnabled: boolean;
 }
 
 const storageKey = "desktop-pet-mvp";
@@ -45,8 +44,7 @@ export function loadAppSettings(): AppSettings {
 
   return {
     deepseekApiKey: data.settings?.deepseekApiKey ?? "",
-    timeZoneMode: data.settings?.timeZoneMode ?? defaultTimeZoneMode,
-    inputSyncEnabled: data.settings?.inputSyncEnabled ?? false
+    timeZoneMode: data.settings?.timeZoneMode ?? defaultTimeZoneMode
   };
 }
 

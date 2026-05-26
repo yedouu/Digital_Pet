@@ -8,12 +8,10 @@ interface SettingsPanelProps {
   deepseekApiKey: string;
   autostartEnabled: boolean;
   autostartPending: boolean;
-  inputSyncEnabled: boolean;
   onChatModeChange: (mode: ChatMode) => void;
   onTimeZoneModeChange: (mode: TimeZoneMode) => void;
   onDeepseekApiKeyChange: (apiKey: string) => void;
   onAutostartChange: (enabled: boolean) => void;
-  onInputSyncChange: (enabled: boolean) => void;
   onClose: () => void;
 }
 
@@ -24,12 +22,10 @@ export default function SettingsPanel({
   deepseekApiKey,
   autostartEnabled,
   autostartPending,
-  inputSyncEnabled,
   onChatModeChange,
   onTimeZoneModeChange,
   onDeepseekApiKeyChange,
   onAutostartChange,
-  onInputSyncChange,
   onClose
 }: SettingsPanelProps) {
   if (!open) {
@@ -76,14 +72,6 @@ export default function SettingsPanel({
           onChange={(event) => onAutostartChange(event.target.checked)}
         />
         <span>Start Bubu when Windows starts</span>
-      </label>
-      <label className="settings-check">
-        <input
-          type="checkbox"
-          checked={inputSyncEnabled}
-          onChange={(event) => onInputSyncChange(event.target.checked)}
-        />
-        <span>Input sync animation</span>
       </label>
     </section>
   );

@@ -89,26 +89,6 @@
       "loop": true,
       "sequence": [0, 1, 2, 4, 3, 5]
     },
-    "syncKeyboard": {
-      "path": "syncKeyboard",
-      "framePrefix": "syncKeyboard",
-      "frameCount": 2,
-      "frameExtension": "png",
-      "fps": 8,
-      "loop": false,
-      "duration": 520,
-      "sequence": [0, 1, 0]
-    },
-    "syncMouse": {
-      "path": "syncMouse",
-      "framePrefix": "syncMouse",
-      "frameCount": 2,
-      "frameExtension": "png",
-      "fps": 7,
-      "loop": false,
-      "duration": 520,
-      "sequence": [0, 1, 0]
-    },
     "look": {
       "path": "look",
       "framePrefix": "look",
