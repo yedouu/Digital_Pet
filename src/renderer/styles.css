@@ -290,7 +290,8 @@ select {
 
 .chat-box button,
 .context-menu button,
-.settings-header button {
+.settings-header button,
+.settings-action {
   display: inline-grid;
   place-items: center;
   border: 0;
@@ -310,8 +311,16 @@ select {
   height: 28px;
 }
 
+.settings-action {
+  min-height: 32px;
+  padding: 0 10px;
+  background: #eef5f3;
+  font-size: 12px;
+}
+
 .chat-box button:hover,
-.settings-header button:hover {
+.settings-header button:hover,
+.settings-action:hover {
   background: #e7f0f2;
 }
 

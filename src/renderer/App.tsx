@@ -12,6 +12,7 @@ import {
   hasSeenFirstLaunch,
   loadPetMemory,
   markFirstLaunchSeen,
+  resetFirstLaunch,
   savePetMemory
 } from "./ai/memoryService";
 import { resetIdleTimer } from "./pet/idleTimer";
@@ -399,6 +400,11 @@ export default function App() {
     showBubble(createTimeContext(mode), "system", 0, true);
   }
 
+  function handleResetFirstLaunch() {
+    resetFirstLaunch();
+    showBubble("First launch greeting will replay next time.", "system", 0, true);
+  }
+
   return (
     <main className={`app app-${state}`} onPointerDown={() => state === "menu" && sendEvent({ type: "MENU_CLOSE" })}>
       <SpeechBubble bubble={bubble} onClose={() => setBubble(null)} />
@@ -428,6 +434,7 @@ export default function App() {
         onTimeZoneModeChange={handleTimeZoneModeChange}
         onDeepseekApiKeyChange={setDeepseekApiKey}
         onAutostartChange={handleAutostartChange}
+        onResetFirstLaunch={handleResetFirstLaunch}
         onClose={() => setSettingsOpen(false)}
       />
     </main>

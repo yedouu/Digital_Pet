@@ -56,6 +56,10 @@ export function markFirstLaunchSeen() {
   window.localStorage.setItem(firstLaunchStorageKey, "true");
 }
 
+export function resetFirstLaunch() {
+  window.localStorage.removeItem(firstLaunchStorageKey);
+}
+
 function createDefaultMemory(): PetMemory {
   return {
     userNickname: "dear",

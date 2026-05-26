@@ -12,6 +12,7 @@ interface SettingsPanelProps {
   onTimeZoneModeChange: (mode: TimeZoneMode) => void;
   onDeepseekApiKeyChange: (apiKey: string) => void;
   onAutostartChange: (enabled: boolean) => void;
+  onResetFirstLaunch: () => void;
   onClose: () => void;
 }
 
@@ -26,6 +27,7 @@ export default function SettingsPanel({
   onTimeZoneModeChange,
   onDeepseekApiKeyChange,
   onAutostartChange,
+  onResetFirstLaunch,
   onClose
 }: SettingsPanelProps) {
   if (!open) {
@@ -73,6 +75,9 @@ export default function SettingsPanel({
         />
         <span>Start Bubu when Windows starts</span>
       </label>
+      <button type="button" className="settings-action" onClick={onResetFirstLaunch}>
+        Replay first launch next time
+      </button>
     </section>
   );
 }
