@@ -3,6 +3,10 @@ import type { PetConfig, TimeZoneMode } from "./petTypes";
 
 export const defaultPetConfig = bubuConfig as PetConfig;
 
+export const live2dPetConfig = {
+  modelUrl: "https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display@master/test/assets/haru/haru_greeter_t03.model3.json"
+} as const;
+
 export const clickReplies = [
   "Hey!",
   "Boop received.",

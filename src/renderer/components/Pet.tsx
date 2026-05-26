@@ -1,5 +1,6 @@
-import { type MouseEvent, type PointerEvent, useEffect, useRef, useState } from "react";
-import { getAnimationDuration, getAnimationFps, getAnimationFrameUrls, getAnimationUrl } from "../pet/animationPlayer";
+import { type MouseEvent, type PointerEvent, useEffect, useRef } from "react";
+import Live2DPet from "./Live2DPet";
+import { getAnimationDuration } from "../pet/animationPlayer";
 import { defaultPetConfig, interactionEffects } from "../pet/petConfig";
 import type { PetEvent, PetState } from "../pet/petTypes";
 import { loadPetPosition, savePetPosition } from "../services/storageService";
@@ -63,12 +64,7 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
   const hoverTimerRef = useRef<number | null>(null);
   const clickBurstRef = useRef<{ count: number; lastTime: number }>({ count: 0, lastTime: 0 });
   const clickTimerRef = useRef<number | null>(null);
-  const [imageFailed, setImageFailed] = useState(false);
-  const [frameIndex, setFrameIndex] = useState(0);
-  const frameUrls = getAnimationFrameUrls(defaultPetConfig, state);
-  const animationUrl = frameUrls[frameIndex] ?? getAnimationUrl(defaultPetConfig, state);
   const duration = getAnimationDuration(defaultPetConfig, state);
-  const fps = getAnimationFps(defaultPetConfig, state);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,26 +93,6 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
     const timer = window.setTimeout(() => onEvent({ type: "ANIMATION_END" }), duration);
     return () => window.clearTimeout(timer);
   }, [duration, onEvent, state]);
-
-  useEffect(() => {
-    setImageFailed(false);
-  }, [animationUrl]);
-
-  useEffect(() => {
-    setFrameIndex(0);
-  }, [state]);
-
-  useEffect(() => {
-    if (frameUrls.length <= 1 || state === "hidden") {
-      return;
-    }
-
-    const timer = window.setInterval(() => {
-      setFrameIndex((current) => (current + 1) % frameUrls.length);
-    }, 1000 / fps);
-
-    return () => window.clearInterval(timer);
-  }, [fps, frameUrls.length, state]);
 
   if (state === "hidden") {
     return null;
@@ -272,24 +248,7 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
       onPointerLeave={handlePointerLeave}
       onContextMenu={handleContextMenu}
     >
-      {animationUrl && !imageFailed ? (
-        <img
-          src={animationUrl}
-          alt={defaultPetConfig.displayName}
-          draggable={false}
-          onError={() => setImageFailed(true)}
-        />
-      ) : (
-        <div className="pet-fallback" aria-label={defaultPetConfig.displayName}>
-          <div className="pet-ear pet-ear-left" />
-          <div className="pet-ear pet-ear-right" />
-          <div className="pet-face">
-            <span className="pet-eye" />
-            <span className="pet-eye" />
-            <span className="pet-mouth" />
-          </div>
-        </div>
-      )}
+      <Live2DPet state={state} />
     </div>
   );
 }
