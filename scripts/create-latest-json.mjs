@@ -8,6 +8,7 @@ const version = packageJson.version;
 const repo = process.env.GITHUB_REPOSITORY ?? "yedouu/Digital_Pet";
 const releaseTag = process.env.RELEASE_TAG ?? `v${version}`;
 const cargoTargetDir = process.env.CARGO_TARGET_DIR ?? "target";
+const releaseNotes = process.env.RELEASE_NOTES?.trim() || getDefaultReleaseNotes(version);
 const targetDir = path.isAbsolute(cargoTargetDir)
   ? cargoTargetDir
   : path.join(rootDir, "src-tauri", cargoTargetDir);
@@ -26,7 +27,7 @@ if (!existsSync(signaturePath)) {
 
 const latestJson = {
   version,
-  notes: `Bubu Desktop Pet ${version}`,
+  notes: releaseNotes,
   pub_date: new Date().toISOString(),
   platforms: {
     "windows-x86_64": {
@@ -64,4 +65,19 @@ function findWindowsArtifact(directories) {
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function getDefaultReleaseNotes(currentVersion) {
+  if (currentVersion === "0.1.2") {
+    return [
+      "Bubu Desktop Pet 0.1.2",
+      "",
+      "- Added a built-in update dialog with release notes.",
+      "- Shows download progress before installing updates.",
+      "- Fixed update download links for installer names with spaces.",
+      "- Release builds no longer open a console window."
+    ].join("\n");
+  }
+
+  return `Bubu Desktop Pet ${currentVersion}`;
 }

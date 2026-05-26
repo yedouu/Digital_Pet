@@ -4,6 +4,7 @@ import ContextMenu, { type ContextMenuPosition } from "./components/ContextMenu"
 import Pet, { closePetWindow, hidePetWindow } from "./components/Pet";
 import SettingsPanel from "./components/SettingsPanel";
 import SpeechBubble, { type BubbleType, type SpeechBubbleData } from "./components/SpeechBubble";
+import UpdateDialog from "./components/UpdateDialog";
 import { appConfig } from "./config/appConfig";
 import { giftConfig } from "./ai/giftConfig";
 import type { PetAction, PetAIReply } from "./ai/characterTypes";
@@ -24,7 +25,12 @@ import { getPetReply, testDeepSeekConnection } from "./services/chatService";
 import { loadAppSettings, saveAppSettings } from "./services/storageService";
 import { createTimeContext, getTimeIdleState } from "./services/timeService";
 import { speak } from "./services/ttsService";
-import { checkForAppUpdate } from "./services/updateService";
+import {
+  checkForAvailableUpdate,
+  installAvailableUpdate,
+  type AppUpdateInfo,
+  type UpdateStatus
+} from "./services/updateService";
 
 const replyVisibleMs = 60 * 1000;
 const chatVisibleMs = 60 * 1000;
@@ -79,6 +85,9 @@ export default function App() {
     return stored || appConfig.deepseekApiKey;
   });
   const [replyText, setReplyText] = useState("");
+  const [updateInfo, setUpdateInfo] = useState<AppUpdateInfo | null>(null);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
+  const [updateInstalling, setUpdateInstalling] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState<ContextMenuPosition>({ x: 20, y: 20 });
   const latestReplyRef = useRef("");
   const latestReplyActionRef = useRef<PetAction>("talk");
@@ -275,9 +284,11 @@ export default function App() {
     let cancelled = false;
 
     const timer = window.setTimeout(() => {
-      checkForAppUpdate((status) => {
-        if (!cancelled) {
-          showBubble(status.message, status.type === "error" ? "error" : "system", 0, true);
+      checkForAvailableUpdate().then((info) => {
+        if (!cancelled && info) {
+          setUpdateInfo(info);
+          setUpdateStatus(null);
+          showBubble(`Bubu ${info.version} is available.`, "system", 0, true);
         }
       }).catch((error: unknown) => {
         if (!cancelled) {
@@ -428,6 +439,20 @@ export default function App() {
     showBubble("First launch greeting will replay next time.", "system", 0, true);
   }
 
+  async function handleInstallUpdate() {
+    setUpdateInstalling(true);
+    setUpdateStatus({ type: "info", message: "Preparing update..." });
+
+    try {
+      await installAvailableUpdate(setUpdateStatus);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Update failed.";
+      setUpdateInstalling(false);
+      setUpdateStatus({ type: "error", message });
+      showBubble(message, "error", 0, true);
+    }
+  }
+
   return (
     <main className={`app app-${state}`} onPointerDown={() => state === "menu" && sendEvent({ type: "MENU_CLOSE" })}>
       <SpeechBubble bubble={bubble} onClose={() => setBubble(null)} />
@@ -459,6 +484,19 @@ export default function App() {
         onAutostartChange={handleAutostartChange}
         onResetFirstLaunch={handleResetFirstLaunch}
         onClose={() => setSettingsOpen(false)}
+      />
+      <UpdateDialog
+        open={Boolean(updateInfo)}
+        updateInfo={updateInfo}
+        status={updateStatus}
+        installing={updateInstalling}
+        onInstall={handleInstallUpdate}
+        onClose={() => {
+          if (!updateInstalling) {
+            setUpdateInfo(null);
+            setUpdateStatus(null);
+          }
+        }}
       />
     </main>
   );

@@ -1,5 +1,5 @@
 import { relaunch } from "@tauri-apps/plugin-process";
-import { check } from "@tauri-apps/plugin-updater";
+import { check, type Update } from "@tauri-apps/plugin-updater";
 
 export type UpdateStatusType = "info" | "progress" | "success" | "error";
 
@@ -8,38 +8,48 @@ export interface UpdateStatus {
   message: string;
 }
 
-export async function checkForAppUpdate(onStatus: (status: UpdateStatus) => void): Promise<void> {
-  if (!isTauriRuntime()) {
-    return;
-  }
+export interface AppUpdateInfo {
+  currentVersion: string;
+  version: string;
+  date?: string;
+  body?: string;
+}
 
-  let update;
+let availableUpdate: Update | null = null;
+
+export async function checkForAvailableUpdate(): Promise<AppUpdateInfo | null> {
+  if (!isTauriRuntime()) {
+    return null;
+  }
 
   try {
-    update = await check({ timeout: 15000 });
+    const update = await check({ timeout: 15000 });
+
+    if (!update) {
+      availableUpdate = null;
+      return null;
+    }
+
+    availableUpdate = update;
+
+    return {
+      currentVersion: update.currentVersion,
+      version: update.version,
+      date: update.date,
+      body: update.body
+    };
   } catch (error) {
     console.info("Update check failed:", error);
-    onStatus({
-      type: "error",
-      message: "Update check failed. Please check the GitHub Release files."
-    });
-    return;
+    throw new Error("Update check failed. Please check the GitHub Release files.");
+  }
+}
+
+export async function installAvailableUpdate(onStatus: (status: UpdateStatus) => void): Promise<void> {
+  if (!availableUpdate) {
+    throw new Error("No update is ready to install.");
   }
 
-  if (!update) {
-    return;
-  }
-
-  const notes = update.body ? `\n\n${update.body}` : "";
-  const shouldInstall = window.confirm(`Bubu ${update.version} is available. Download and install it now?${notes}`);
-
-  if (!shouldInstall) {
-    onStatus({
-      type: "info",
-      message: `Update ${update.version} is available.`
-    });
-    return;
-  }
+  const update = availableUpdate;
 
   let downloaded = 0;
   let contentLength = 0;

@@ -406,6 +406,131 @@ select {
   padding: 0;
 }
 
+.update-dialog {
+  position: absolute;
+  inset: 8px;
+  z-index: 12;
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+}
+
+.update-card {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  max-height: 100%;
+  padding: 10px;
+  border: 1px solid rgba(42, 55, 65, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 16px 36px rgba(33, 43, 52, 0.24);
+  overflow: hidden;
+}
+
+.update-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.update-header div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.update-header strong {
+  color: #25313a;
+  font-size: 14px;
+}
+
+.update-header span {
+  color: #697982;
+  font-size: 11px;
+}
+
+.update-header button {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #31414a;
+  cursor: pointer;
+}
+
+.update-header button:hover {
+  background: rgba(54, 73, 83, 0.1);
+}
+
+.update-notes {
+  max-height: 82px;
+  padding: 8px;
+  border-radius: 7px;
+  background: #f5f8f7;
+  color: #2c3942;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.update-status {
+  min-height: 24px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: #eef5f3;
+  color: #31414a;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.update-status-error {
+  background: #ffebe7;
+}
+
+.update-actions {
+  display: flex;
+  justify-content: end;
+  gap: 7px;
+}
+
+.update-actions button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #eef2f3;
+  color: #283640;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.update-actions button:hover {
+  background: #e2ebed;
+}
+
+.update-actions button:disabled,
+.update-header button:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.update-actions .update-primary {
+  background: #3f7180;
+  color: #fff;
+}
+
+.update-actions .update-primary:hover {
+  background: #345f6c;
+}
+
 @keyframes pet-idle {
   0%,
   100% {
