@@ -7,7 +7,6 @@ import type { ContextMenuPosition } from "./ContextMenu";
 
 interface PetProps {
   state: PetState;
-  animationSignal: number;
   onEvent: (event: PetEvent) => void;
   onContextMenuPosition: (position: ContextMenuPosition) => void;
 }
@@ -52,7 +51,7 @@ export async function closePetWindow() {
   await api?.appWindow.close();
 }
 
-export default function Pet({ state, animationSignal, onEvent, onContextMenuPosition }: PetProps) {
+export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps) {
   const pointerStartRef = useRef<{
     x: number;
     y: number;
@@ -97,7 +96,7 @@ export default function Pet({ state, animationSignal, onEvent, onContextMenuPosi
 
     const timer = window.setTimeout(() => onEvent({ type: "ANIMATION_END" }), duration);
     return () => window.clearTimeout(timer);
-  }, [animationSignal, duration, onEvent, state]);
+  }, [duration, onEvent, state]);
 
   useEffect(() => {
     setImageFailed(false);
@@ -105,7 +104,7 @@ export default function Pet({ state, animationSignal, onEvent, onContextMenuPosi
 
   useEffect(() => {
     setFrameIndex(0);
-  }, [animationSignal, state]);
+  }, [state]);
 
   useEffect(() => {
     if (frameUrls.length <= 1 || state === "hidden") {

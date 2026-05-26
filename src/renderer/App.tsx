@@ -67,7 +67,6 @@ export default function App() {
   const [inputSyncEnabled, setInputSyncEnabled] = useState(initialSettings.inputSyncEnabled);
   const [autostartEnabled, setAutostartEnabledState] = useState(false);
   const [autostartPending, setAutostartPending] = useState(false);
-  const [animationSignal, setAnimationSignal] = useState(0);
   const [deepseekApiKey, setDeepseekApiKey] = useState(() => {
     const stored = initialSettings.deepseekApiKey;
     return stored || appConfig.deepseekApiKey;
@@ -75,7 +74,6 @@ export default function App() {
   const [replyText, setReplyText] = useState("");
   const [contextMenuPosition, setContextMenuPosition] = useState<ContextMenuPosition>({ x: 20, y: 20 });
   const latestReplyRef = useRef("");
-  const sendEventRef = useRef<(event: PetEvent) => void>(() => {});
 
   const showBubble = useCallback(
     (text: string, type: BubbleType = "normal", duration = 3600, closable = duration <= 0) => {
@@ -109,7 +107,6 @@ export default function App() {
 
         case "INPUT_SYNC_KEYBOARD":
         case "INPUT_SYNC_MOUSE":
-          setAnimationSignal((current) => current + 1);
           dispatch(event);
           return;
 
@@ -179,10 +176,6 @@ export default function App() {
   );
 
   useEffect(() => {
-    sendEventRef.current = sendEvent;
-  }, [sendEvent]);
-
-  useEffect(() => {
     saveAppSettings({ deepseekApiKey, inputSyncEnabled, timeZoneMode });
   }, [deepseekApiKey, inputSyncEnabled, timeZoneMode]);
 
@@ -196,7 +189,7 @@ export default function App() {
     let unlisten: (() => void) | null = null;
     let cancelled = false;
 
-    listenNativeInputSync((event) => sendEventRef.current(event)).then((nextUnlisten) => {
+    listenNativeInputSync(sendEvent).then((nextUnlisten) => {
       if (cancelled) {
         nextUnlisten();
         return;
@@ -208,8 +201,9 @@ export default function App() {
     return () => {
       cancelled = true;
       unlisten?.();
+      setNativeInputSyncEnabled(false).catch(() => {});
     };
-  }, []);
+  }, [sendEvent]);
 
   useEffect(() => {
     let cancelled = false;
@@ -355,12 +349,7 @@ export default function App() {
   return (
     <main className={`app app-${state}`} onPointerDown={() => state === "menu" && sendEvent({ type: "MENU_CLOSE" })}>
       <SpeechBubble bubble={bubble} onClose={() => setBubble(null)} />
-      <Pet
-        state={state}
-        animationSignal={animationSignal}
-        onEvent={sendEvent}
-        onContextMenuPosition={setContextMenuPosition}
-      />
+      <Pet state={state} onEvent={sendEvent} onContextMenuPosition={setContextMenuPosition} />
       <ChatBox open={chatOpen} onClose={() => setChatOpen(false)} onSend={handleSendMessage} />
       <ContextMenu
         open={state === "menu"}
