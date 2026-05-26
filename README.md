@@ -1,165 +1,143 @@
-# Bubu 桌面宠物
+# Bubu 桌面宠物使用说明
 
-Bubu 是一个基于 Tauri 的桌面宠物。它可以悬浮在桌面上，播放帧动画，支持点击反应、拖动、右键菜单、简单聊天、DeepSeek 回复、本地兜底回复和英文 TTS 朗读。
+Bubu 是一个会停在桌面上的小宠物。它可以显示动画、拖动位置、聊天、朗读回复，并根据时间切换不同状态。
 
-## 使用应用
+## 快速开始
 
-普通用户建议直接从 GitHub Releases 下载最新版安装包：
+普通用户建议从 GitHub Releases 下载最新版安装包：
 
 [GitHub Releases](https://github.com/yedouu/Digital_Pet/releases)
 
-安装后可以这样使用：
+下载后运行安装包，安装完成后打开 `Bubu Desktop Pet` 即可。
 
-- 单击 Bubu：播放开心反应。
-- 双击 Bubu：打开聊天框。
-- 右键 Bubu：打开菜单。
-- 拖动 Bubu：移动桌面位置。
-- 在 Settings 中选择 DeepSeek API 或本地兜底模式。
-
-## 开发运行
-
-请先安装：
-
-- Node.js
-- Rust / Cargo
-- Windows WebView2 Runtime
-
-然后运行：
+如果你是从源码运行：
 
 ```powershell
-cd C:\Users\yedou\Documents\Digital_Pet
 npm.cmd install
 npm.cmd run tauri:dev
 ```
 
-DeepSeek 配置从 `.env.local` 读取：
+## 基本操作
+
+- 单击 Bubu：播放开心反应，并显示一句小气泡。
+- 双击 Bubu：打开聊天框。
+- 拖动 Bubu：按住宠物移动到桌面任意位置，松开后会保存位置。
+- 右键 Bubu：打开菜单。
+- 长时间不操作：Bubu 会根据当前选择的时区和时间自动切换待机状态。
+
+## 右键菜单
+
+右键 Bubu 后可以使用这些功能：
+
+- `Chat`：打开聊天框。
+- `Random line`：让 Bubu 换一句话。
+- `Hide`：隐藏 Bubu。
+- `Settings`：打开设置。
+- `Exit`：退出程序。
+
+隐藏后可以通过系统托盘图标重新显示 Bubu。
+
+## 聊天与朗读
+
+双击 Bubu 打开聊天框后，可以输入文字并按 Enter 或点击发送。
+
+Bubu 会先思考，然后显示回复气泡，并用英文 TTS 朗读。回复气泡不会立刻消失，可以手动关闭。
+
+目前支持两种聊天模式：
+
+- `DeepSeek API`：使用 DeepSeek 接口回复。
+- `Local fallback`：本地兜底回复，不需要联网，但回答比较简单。
+
+如果 DeepSeek 不可用，程序会自动切换到本地兜底模式。
+
+## 设置说明
+
+打开右键菜单，点击 `Settings` 可以进入设置。
+
+### Chat mode
+
+选择聊天模式：
+
+- `DeepSeek API`
+- `Local fallback`
+
+### Bubu time
+
+选择 Bubu 使用哪个时区判断状态：
+
+- `South Africa time`
+- `China time`
+
+Bubu 会按所选时区切换待机状态：
+
+- `06:00-08:00`：刚睡醒
+- `08:00-22:00`：精神饱满
+- `22:00-06:00`：困困的
+
+### DeepSeek API Key
+
+可以在设置里填写 DeepSeek API Key，也可以在项目根目录创建 `.env.local`：
 
 ```text
 VITE_DEEPSEEK_API_KEY=your_deepseek_key_here
 VITE_DEEPSEEK_MODEL=deepseek-v4-flash
 ```
 
-`.env.local` 不会提交到 Git。可以复制 `.env.example` 作为模板。
+`.env.local` 不会提交到 Git。
 
-## 打包安装包
+### Start Bubu when Windows starts
 
-如果要给别的电脑安装，运行：
+控制是否开机自启动。默认关闭。
+
+## 给别人安装
+
+如果要把 Bubu 安装到别人的电脑，推荐发布安装包，而不是让对方运行源码。
+
+开发者构建安装包：
 
 ```powershell
-cd C:\Users\yedou\Documents\Digital_Pet
 npm.cmd run tauri:build
 ```
 
-安装包会生成在：
+生成位置：
 
 ```text
 src-tauri/target/release/bundle/
 ```
 
-Windows 下使用该目录中的 `.msi` 或 `.exe` 安装包。
+把里面的 `.msi` 或 `.exe` 发给用户安装即可。
 
-## 发布和更新用户
+## 更新方式
 
-当前项目采用简单的手动更新流程：
+当前推荐使用 GitHub Release 手动更新：
 
-```text
-GitHub Release 上传安装包
-用户下载最新版安装包
-用户运行安装包升级或覆盖旧版本
-```
+1. 开发者构建新版安装包。
+2. 上传到 GitHub Releases。
+3. 用户下载新版安装包。
+4. 用户直接运行新版安装包覆盖安装。
 
-推荐发布步骤：
+通常不需要先卸载旧版本。只要应用的 `identifier` 和 `productName` 保持一致，并递增版本号，安装包会识别为同一个应用的新版本。
 
-1. 修改 `src-tauri/tauri.conf.json` 中的版本号。
-2. 构建安装包：
+## 开发者常用命令
+
+启动开发版：
 
 ```powershell
-npm.cmd run tauri:build
+npm.cmd run tauri:dev
 ```
 
-3. 打开 GitHub 仓库。
-4. 进入 `Releases`。
-5. 点击 `Draft a new release`。
-6. 创建类似 `v0.1.1` 的 tag。
-7. 上传 `src-tauri/target/release/bundle/` 中新的 `.msi` 或 `.exe`。
-8. 发布 Release。
-
-用户之后下载新安装包并运行即可更新。
-
-## 新安装包会卸载旧版本吗？
-
-通常不需要手动卸载旧版本。
-
-Windows 安装包主要依赖这些字段识别同一个应用：
-
-```json
-{
-  "productName": "Bubu Desktop Pet",
-  "identifier": "com.codex.desktop-pet-mvp",
-  "version": "0.1.1"
-}
-```
-
-这些字段保持稳定：
-
-- `identifier`
-- `productName`
-- 安装目标
-
-每次发布递增：
-
-- `version`
-
-当 `identifier` 不变且 `version` 递增时，新安装包会被识别为同一个应用的新版本。运行新安装包通常会升级或覆盖旧文件。
-
-这比先卸载再安装更好，因为卸载可能会删除用户数据，例如窗口位置、设置或 API Key。
-
-## 日常开发流程
-
-每次修改代码后：
+构建前端：
 
 ```powershell
 npm.cmd run build
-git add .
-git commit -m "Describe the change"
-git push
 ```
 
-公开发布时：
+构建安装包：
 
 ```powershell
-# 先更新版本号
 npm.cmd run tauri:build
-# 再把安装包上传到 GitHub Releases
 ```
 
-## DeepSeek 和本地兜底
+## 当前版本说明
 
-默认模式是 DeepSeek API。
-
-应用启动时会测试一次 DeepSeek：
-
-- 如果测试成功，保持 DeepSeek 模式。
-- 如果测试失败或没有 API Key，切换到本地兜底模式。
-
-本地兜底可以离线工作，只返回简单的规则回复。
-
-## 素材说明
-
-Bubu 动画帧存放在：
-
-```text
-assets/pets/bubu/
-```
-
-如果有 6 张 3x2 精灵图，请放到：
-
-```text
-assets/source-sheets/bubu/
-```
-
-然后切分为动作帧：
-
-```powershell
-npm.cmd run slice:bubu
-```
+当前稳定分支使用 Sprite 图片动画方案。Live2D 方案在独立分支中验证，不包含在当前稳定版本里。
