@@ -58,7 +58,7 @@ export function markFirstLaunchSeen() {
 
 function createDefaultMemory(): PetMemory {
   return {
-    userNickname: "主人",
+    userNickname: "dear",
     memorySummary: "",
     recentMessages: []
   };

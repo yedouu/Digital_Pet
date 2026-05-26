@@ -1,8 +1,8 @@
-import { appConfig } from "../config/appConfig";
 import { bubuCharacter } from "../ai/bubuCharacter";
 import type { PetAIReply, PetCharacter } from "../ai/characterTypes";
 import { buildPetSystemPrompt, type RecentMessage } from "../ai/promptBuilder";
 import { parsePetAIReply } from "../ai/replyParser";
+import { appConfig } from "../config/appConfig";
 import type { ChatMode, TimeZoneMode } from "../pet/petTypes";
 import { getLocalReply } from "./localReplyService";
 import { createTimeContext } from "./timeService";
@@ -53,7 +53,7 @@ export async function testDeepSeekConnection(apiKey: string): Promise<boolean> {
   }
 
   try {
-    await getDeepSeekReply("请只回复一个简短 JSON，text 写 OK。", apiKey, "south-africa", {});
+    await getDeepSeekReply("Reply with JSON only. Set text to OK.", apiKey, "south-africa", {});
     return true;
   } catch {
     return false;
@@ -120,7 +120,7 @@ function buildMessages(input: string, character: PetCharacter, options: PetReply
   const systemPrompt = buildPetSystemPrompt({
     character,
     memorySummary: options.memorySummary,
-    userNickname: options.userNickname || "主人",
+    userNickname: options.userNickname || "dear",
     extraContext: createTimeContext(options.timeZoneMode ?? "south-africa")
   });
 
@@ -157,15 +157,15 @@ function buildMessages(input: string, character: PetCharacter, options: PetReply
 function chooseLocalAction(input: string): PetAIReply["action"] {
   const normalized = input.toLowerCase();
 
-  if (normalized.includes("晚安") || normalized.includes("sleep") || normalized.includes("good night")) {
+  if (normalized.includes("good night") || normalized.includes("sleep") || normalized.includes("tired")) {
     return "sleep";
   }
 
-  if (normalized.includes("累") || normalized.includes("sad") || normalized.includes("不开心") || normalized.includes("tired")) {
+  if (normalized.includes("sad") || normalized.includes("down") || normalized.includes("tough")) {
     return "happy";
   }
 
-  if (normalized.includes("?") || normalized.includes("？") || normalized.includes("为什么") || normalized.includes("how")) {
+  if (normalized.includes("?") || normalized.includes("how") || normalized.includes("why")) {
     return "think";
   }
 
@@ -175,15 +175,15 @@ function chooseLocalAction(input: string): PetAIReply["action"] {
 function chooseLocalEmotion(input: string): PetAIReply["emotion"] {
   const normalized = input.toLowerCase();
 
-  if (normalized.includes("晚安") || normalized.includes("sleep") || normalized.includes("good night")) {
+  if (normalized.includes("good night") || normalized.includes("sleep") || normalized.includes("tired")) {
     return "sleepy";
   }
 
-  if (normalized.includes("累") || normalized.includes("难过") || normalized.includes("不开心") || normalized.includes("tired")) {
+  if (normalized.includes("sad") || normalized.includes("down") || normalized.includes("tough")) {
     return "caring";
   }
 
-  if (normalized.includes("你好") || normalized.includes("hello") || normalized.includes("hi")) {
+  if (normalized.includes("hello") || normalized.includes("hi")) {
     return "happy";
   }
 

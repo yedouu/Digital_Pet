@@ -11,18 +11,18 @@ export function parsePetAIReply(raw: string): PetAIReply {
 
     const action: PetAction = validActions.includes(data.action) ? data.action : "talk";
     const emotion: PetEmotion = validEmotions.includes(data.emotion) ? data.emotion : "neutral";
-    const text = typeof data.text === "string" && data.text.trim() ? data.text.trim() : "布布在呢~";
+    const text = typeof data.text === "string" && data.text.trim() ? data.text.trim() : "Bubu is here.";
 
     return {
       action,
       emotion,
-      text: truncateText(text, 80)
+      text: truncateText(text, 120)
     };
   } catch {
     return {
       action: "talk",
       emotion: "neutral",
-      text: truncateText(raw || "布布在呢~", 80)
+      text: truncateText(raw || "Bubu is here.", 120)
     };
   }
 }
