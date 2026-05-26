@@ -59,33 +59,38 @@ export async function installAvailableUpdate(onStatus: (status: UpdateStatus) =>
     message: `Downloading Bubu ${update.version}...`
   });
 
-  await update.downloadAndInstall((event) => {
-    switch (event.event) {
-      case "Started":
-        contentLength = event.data.contentLength ?? 0;
-        downloaded = 0;
-        onStatus({
-          type: "progress",
-          message: "Starting update download..."
-        });
-        break;
+  try {
+    await update.downloadAndInstall((event) => {
+      switch (event.event) {
+        case "Started":
+          contentLength = event.data.contentLength ?? 0;
+          downloaded = 0;
+          onStatus({
+            type: "progress",
+            message: "Starting update download..."
+          });
+          break;
 
-      case "Progress":
-        downloaded += event.data.chunkLength;
-        onStatus({
-          type: "progress",
-          message: formatDownloadProgress(downloaded, contentLength)
-        });
-        break;
+        case "Progress":
+          downloaded += event.data.chunkLength;
+          onStatus({
+            type: "progress",
+            message: formatDownloadProgress(downloaded, contentLength)
+          });
+          break;
 
-      case "Finished":
-        onStatus({
-          type: "success",
-          message: "Update downloaded. Installing now..."
-        });
-        break;
-    }
-  });
+        case "Finished":
+          onStatus({
+            type: "success",
+            message: "Update downloaded. Installing now..."
+          });
+          break;
+      }
+    });
+  } catch (error) {
+    console.info("Update install failed:", error);
+    throw new Error(`Update download failed. Please check that the GitHub Release installer matches latest.json. ${getErrorMessage(error)}`);
+  }
 
   onStatus({
     type: "success",
@@ -102,6 +107,10 @@ function formatDownloadProgress(downloaded: number, contentLength: number): stri
 
   const percent = Math.min(100, Math.round((downloaded / contentLength) * 100));
   return `Downloading update... ${percent}%`;
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function isTauriRuntime(): boolean {

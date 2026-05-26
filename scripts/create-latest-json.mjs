@@ -20,6 +20,7 @@ const candidates = [
 
 const artifact = findWindowsArtifact(candidates);
 const signaturePath = `${artifact.path}.sig`;
+const releaseAssetName = process.env.RELEASE_ASSET_NAME?.trim() || toReleaseAssetName(artifact.fileName);
 
 if (!existsSync(signaturePath)) {
   throw new Error(`Missing signature file: ${signaturePath}`);
@@ -32,7 +33,7 @@ const latestJson = {
   platforms: {
     "windows-x86_64": {
       signature: readFileSync(signaturePath, "utf8").trim(),
-      url: `https://github.com/${repo}/releases/download/${encodeURIComponent(releaseTag)}/${encodeURIComponent(artifact.fileName)}`
+      url: `https://github.com/${repo}/releases/download/${encodeURIComponent(releaseTag)}/${encodeURIComponent(releaseAssetName)}`
     }
   }
 };
@@ -65,6 +66,10 @@ function findWindowsArtifact(directories) {
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function toReleaseAssetName(fileName) {
+  return fileName.replace(/\s+/g, ".");
 }
 
 function getDefaultReleaseNotes(currentVersion) {

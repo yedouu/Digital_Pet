@@ -1,5 +1,19 @@
 import type { AppUpdateInfo, UpdateStatus } from "../services/updateService";
 
+let currentWindowPromise: Promise<{ startDragging: () => Promise<void> } | null> | null = null;
+
+function getCurrentAppWindow() {
+  if (!("__TAURI_INTERNALS__" in window)) {
+    return Promise.resolve(null);
+  }
+
+  currentWindowPromise = currentWindowPromise ?? import("@tauri-apps/api/window")
+    .then((api) => api.getCurrentWindow())
+    .catch(() => null);
+
+  return currentWindowPromise;
+}
+
 interface UpdateDialogProps {
   open: boolean;
   updateInfo: AppUpdateInfo | null;
@@ -21,15 +35,26 @@ export default function UpdateDialog({
     return null;
   }
 
+  async function handleDragStart() {
+    const appWindow = await getCurrentAppWindow();
+    await appWindow?.startDragging();
+  }
+
   return (
     <section className="update-dialog" aria-label="Update available">
       <div className="update-card">
-        <header className="update-header">
+        <header className="update-header" onPointerDown={handleDragStart}>
           <div>
             <strong>Bubu {updateInfo.version}</strong>
             <span>Current {updateInfo.currentVersion}</span>
           </div>
-          <button type="button" aria-label="Close update dialog" onClick={onClose} disabled={installing}>
+          <button
+            type="button"
+            aria-label="Close update dialog"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={onClose}
+            disabled={installing}
+          >
             x
           </button>
         </header>
