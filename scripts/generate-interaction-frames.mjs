@@ -29,14 +29,14 @@ const sets = [
   {
     action: "syncKeyboard",
     source: "think",
-    frames: ["think_00.png", "think_01.png", "think_04.png", "think_01.png", "think_04.png", "think_00.png"],
-    overlays: ["work-key-0", "work-key-1", "work-key-2", "work-key-3", "work-key-4", "work-key-5"]
+    frames: ["think_00.png", "think_01.png", "think_04.png", "think_01.png"],
+    overlays: ["keyboard-tap-left", "keyboard-tap-mid", "keyboard-tap-right", "keyboard-tap-mid"]
   },
   {
     action: "syncMouse",
     source: "think",
-    frames: ["think_00.png", "think_01.png", "think_05.png", "think_01.png", "think_04.png", "think_00.png"],
-    overlays: ["work-mouse-0", "work-mouse-1", "work-mouse-2", "work-mouse-3", "work-mouse-4", "work-mouse-5"]
+    frames: ["think_00.png", "think_01.png", "think_05.png", "think_01.png"],
+    overlays: ["mouse-move-left", "mouse-move-mid", "mouse-move-right", "mouse-move-mid"]
   },
   {
     action: "look",
@@ -120,10 +120,6 @@ function createOverlay(kind) {
       `<path d="M172 54 H198 L174 82 H200" fill="none" stroke="#5b3427" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>`,
       `<path d="M200 28 H218 L202 48 H220" fill="none" stroke="#5b3427" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.56"/>`
     );
-  }
-
-  if (kind.startsWith("work-key-") || kind.startsWith("work-mouse-")) {
-    parts.push(workDeskScene(kind));
   }
 
   if (kind === "keyboard-tap-left" || kind === "keyboard-tap-mid" || kind === "keyboard-tap-right") {
@@ -243,66 +239,4 @@ function arm(fromX, fromY, toX, toY) {
 
 function paw(x, y, pressed) {
   return `<ellipse cx="${x}" cy="${y}" rx="${pressed ? 17 : 15}" ry="${pressed ? 9 : 10}" fill="#f1c2a1" stroke="#5b3427" stroke-width="3" opacity="0.98"/>`;
-}
-
-function workDeskScene(kind) {
-  const isMouseFocus = kind.startsWith("work-mouse-");
-  const index = Number(kind.slice(kind.lastIndexOf("-") + 1));
-  const mousePath = isMouseFocus ? [39, 48, 60, 72, 61, 48] : [43, 50, 57, 64, 57, 50];
-  const mouseX = mousePath[index] ?? 52;
-  const keyPhases = isMouseFocus ? ["mid", "left", "mid", "right", "mid", "left"] : ["left", "mid", "right", "mid", "left", "rest"];
-  const keyPhase = keyPhases[index] ?? "mid";
-  const rightPaw = keyboardPawPosition(keyPhase);
-  const leftPawY = isMouseFocus && (index === 2 || index === 3) ? 169 : 174;
-  const bodyLean = isMouseFocus ? (mouseX - 55) * 0.08 : keyPhase === "left" ? -3 : keyPhase === "right" ? 3 : 0;
-
-  return [
-    compactDeskSurface(),
-    monitorBack(),
-    seatedLegs(bodyLean),
-    flowerPad(52, 197),
-    mouseDevice(mouseX, 184),
-    keyboard(104, 184, `keyboard-tap-${keyPhase}`),
-    cable(mouseX, 202, 100, 238),
-    arm(70, 153, mouseX, leftPawY),
-    arm(148, 153, rightPaw.x, rightPaw.y),
-    paw(mouseX, leftPawY, isMouseFocus),
-    paw(rightPaw.x, rightPaw.y, keyPhase !== "rest")
-  ].join("");
-}
-
-function keyboardPawPosition(phase) {
-  if (phase === "left") {
-    return { x: 118, y: 172 };
-  }
-
-  if (phase === "right") {
-    return { x: 156, y: 172 };
-  }
-
-  if (phase === "rest") {
-    return { x: 138, y: 181 };
-  }
-
-  return { x: 137, y: 174 };
-}
-
-function compactDeskSurface() {
-  return `<path d="M8 164 H248 V240 H8Z" fill="#fff4f8" stroke="#4d3228" stroke-width="5" opacity="0.98"/>
-  <path d="M14 164 H242" stroke="#f2b5c4" stroke-width="3" opacity="0.9"/>`;
-}
-
-function monitorBack() {
-  return `<path d="M58 160 C54 116 78 84 128 84 C178 84 202 116 198 160" fill="#65518b" stroke="#4d3228" stroke-width="5" opacity="0.28"/>`;
-}
-
-function mouseDevice(x, y) {
-  return `<g><ellipse cx="${x}" cy="${y + 8}" rx="26" ry="32" fill="#ffc2d1" stroke="#5b3427" stroke-width="4" opacity="0.97"/>
-  <path d="M${x} ${y - 18} V${y + 30}" stroke="#cf7c94" stroke-width="3" stroke-linecap="round"/>
-  <rect x="${x - 5}" y="${y - 9}" width="10" height="19" rx="5" fill="#ffe7ee" stroke="#cf7c94" stroke-width="3"/></g>`;
-}
-
-function cable(x1, y1, x2, y2) {
-  return `<path d="M${x1} ${y1} C${x1 - 14} ${y1 + 18} ${x2 - 22} ${y2 - 12} ${x2} ${y2}" fill="none" stroke="#cf7c94" stroke-width="5" stroke-linecap="round" opacity="0.88"/>
-  <path d="M${x1} ${y1} C${x1 - 14} ${y1 + 18} ${x2 - 22} ${y2 - 12} ${x2} ${y2}" fill="none" stroke="#ffe7ee" stroke-width="2" stroke-linecap="round" opacity="0.9"/>`;
 }
