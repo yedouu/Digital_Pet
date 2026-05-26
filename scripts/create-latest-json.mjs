@@ -31,7 +31,7 @@ const latestJson = {
   platforms: {
     "windows-x86_64": {
       signature: readFileSync(signaturePath, "utf8").trim(),
-      url: `https://github.com/${repo}/releases/download/${releaseTag}/${artifact.fileName}`
+      url: `https://github.com/${repo}/releases/download/${encodeURIComponent(releaseTag)}/${encodeURIComponent(artifact.fileName)}`
     }
   }
 };
