@@ -29,14 +29,14 @@ const sets = [
   {
     action: "syncKeyboard",
     source: "think",
-    frames: ["think_00.png", "think_04.png"],
-    overlays: ["sync-scene-left", "sync-scene-right"]
+    frames: ["think_01.png", "think_04.png"],
+    overlays: ["keyboard-left", "keyboard-right"]
   },
   {
     action: "syncMouse",
-    source: "think",
-    frames: ["think_01.png", "think_05.png"],
-    overlays: ["sync-scene-mouse-left", "sync-scene-mouse-right"]
+    source: "happy",
+    frames: ["happy_00.png", "happy_05.png"],
+    overlays: ["mouse-left", "mouse-right"]
   },
   {
     action: "look",
@@ -122,27 +122,30 @@ function createOverlay(kind) {
     );
   }
 
-  if (kind === "sync-scene-left" || kind === "sync-scene-right") {
-    const pawX = kind === "sync-scene-left" ? 82 : 108;
+  if (kind === "keyboard-left" || kind === "keyboard-right") {
+    const pawX = kind === "keyboard-left" ? 92 : 106;
     parts.push(
-      deskSurface(),
-      keyboard(82, 190),
-      flowerPad(46, 190),
-      bird(196, 178),
-      `<ellipse cx="${pawX}" cy="172" rx="15" ry="10" fill="#f1c2a1" stroke="#5b3427" stroke-width="3" opacity="0.98"/>`,
-      `<path d="M60 176 C70 170 78 170 88 176" fill="none" stroke="#5b3427" stroke-width="3" stroke-linecap="round" opacity="0.72"/>`
+      `<rect x="60" y="180" width="136" height="38" rx="8" fill="#f7fbff" stroke="#5b3427" stroke-width="4" opacity="0.94"/>`,
+      `<rect x="74" y="190" width="14" height="10" rx="2" fill="#f3a7bb" opacity="0.9"/>`,
+      `<rect x="96" y="190" width="14" height="10" rx="2" fill="#d6e6ff" opacity="0.9"/>`,
+      `<rect x="118" y="190" width="14" height="10" rx="2" fill="#f3a7bb" opacity="0.9"/>`,
+      `<rect x="140" y="190" width="14" height="10" rx="2" fill="#d6e6ff" opacity="0.9"/>`,
+      `<rect x="162" y="190" width="14" height="10" rx="2" fill="#f3a7bb" opacity="0.9"/>`,
+      `<rect x="92" y="205" width="72" height="8" rx="3" fill="#c8d8e4" opacity="0.95"/>`,
+      `<ellipse cx="${pawX}" cy="176" rx="16" ry="10" fill="#f1c2a1" stroke="#5b3427" stroke-width="3" opacity="0.96"/>`
     );
   }
 
-  if (kind === "sync-scene-mouse-left" || kind === "sync-scene-mouse-right") {
-    const pawX = kind === "sync-scene-mouse-left" ? 42 : 56;
+  if (kind === "mouse-left" || kind === "mouse-right") {
+    const mouseX = kind === "mouse-left" ? 166 : 176;
     parts.push(
-      deskSurface(),
-      keyboard(90, 190),
-      flowerPad(46, 190),
-      bird(200, 178),
-      `<ellipse cx="${pawX}" cy="174" rx="16" ry="10" fill="#f1c2a1" stroke="#5b3427" stroke-width="3" opacity="0.98"/>`,
-      `<path d="M${pawX - 7} 172 C${pawX} 164 ${pawX + 12} 164 ${pawX + 19} 172" fill="none" stroke="#5b3427" stroke-width="3" stroke-linecap="round" opacity="0.72"/>`
+      `<rect x="64" y="184" width="84" height="28" rx="8" fill="#f7fbff" stroke="#5b3427" stroke-width="4" opacity="0.9"/>`,
+      `<circle cx="82" cy="198" r="6" fill="#f3a7bb" opacity="0.9"/>`,
+      `<circle cx="102" cy="198" r="6" fill="#f3a7bb" opacity="0.9"/>`,
+      `<circle cx="122" cy="198" r="6" fill="#f3a7bb" opacity="0.9"/>`,
+      `<path d="M148 198 C158 186 170 184 182 190 C194 196 194 214 180 220 C166 226 152 218 148 198Z" fill="#dff3dc" stroke="#5b3427" stroke-width="4" opacity="0.94"/>`,
+      `<path d="M${mouseX} 189 V215" stroke="#8fcf8c" stroke-width="4" stroke-linecap="round" opacity="0.8"/>`,
+      `<ellipse cx="${mouseX}" cy="176" rx="15" ry="10" fill="#f1c2a1" stroke="#5b3427" stroke-width="3" opacity="0.96"/>`
     );
   }
 
@@ -185,37 +188,4 @@ function ellipse(cx, cy, rx, ry, fill, opacity) {
 
 function wobbleMarks(x, y) {
   return `<path d="M${x} ${y - 18} C${x - 10} ${y - 8} ${x - 10} ${y + 8} ${x} ${y + 18}" fill="none" stroke="#5b3427" stroke-width="4" stroke-linecap="round" opacity="0.72"/>`;
-}
-
-function deskSurface() {
-  return `<path d="M10 168 H246 V238 H10Z" fill="#f8fbff" stroke="#4d3228" stroke-width="5" opacity="0.98"/>
-  <path d="M14 168 H242" stroke="#d9e5ea" stroke-width="3" opacity="0.85"/>`;
-}
-
-function flowerPad(x, y) {
-  const petals = [
-    `<ellipse cx="${x - 14}" cy="${y}" rx="10" ry="7" fill="#f7b5c8"/>`,
-    `<ellipse cx="${x}" cy="${y - 12}" rx="7" ry="10" fill="#f7b5c8"/>`,
-    `<ellipse cx="${x + 14}" cy="${y}" rx="10" ry="7" fill="#f7b5c8"/>`,
-    `<ellipse cx="${x}" cy="${y + 12}" rx="7" ry="10" fill="#f7b5c8"/>`
-  ];
-
-  return `<g opacity="0.95">${petals.join("")}<circle cx="${x}" cy="${y}" r="8" fill="#ffe3ec" stroke="#d7839e" stroke-width="3"/></g>`;
-}
-
-function keyboard(x, y) {
-  const keys = [];
-
-  for (let row = 0; row < 3; row += 1) {
-    for (let col = 0; col < 5; col += 1) {
-      const fill = (row + col) % 2 === 0 ? "#f3a7bb" : "#d7e6ff";
-      keys.push(`<rect x="${x + col * 16}" y="${y + row * 11}" width="11" height="8" rx="2" fill="${fill}" opacity="0.92"/>`);
-    }
-  }
-
-  return `<g><rect x="${x - 8}" y="${y - 7}" width="98" height="46" rx="8" fill="#f2f6fb" stroke="#5b3427" stroke-width="4" opacity="0.96"/>${keys.join("")}<rect x="${x + 20}" y="${y + 33}" width="42" height="6" rx="3" fill="#bacbd6" opacity="0.95"/></g>`;
-}
-
-function bird(x, y) {
-  return `<g opacity="0.96"><path d="M${x - 22} ${y + 24} C${x - 26} ${y} ${x + 1} ${y - 14} ${x + 17} ${y + 4} C${x + 29} ${y + 18} ${x + 13} ${y + 34} ${x - 8} ${y + 34} C${x - 15} ${y + 34} ${x - 20} ${y + 30} ${x - 22} ${y + 24}Z" fill="#a9df91" stroke="#5b3427" stroke-width="3"/><circle cx="${x + 6}" cy="${y + 3}" r="3" fill="#2a1a14"/><path d="M${x + 15} ${y + 6} L${x + 28} ${y + 10} L${x + 15} ${y + 15}Z" fill="#ffe074" stroke="#5b3427" stroke-width="2"/></g>`;
 }

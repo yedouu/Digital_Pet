@@ -83,7 +83,7 @@ export default function SettingsPanel({
           checked={inputSyncEnabled}
           onChange={(event) => onInputSyncChange(event.target.checked)}
         />
-        <span>Global input sync animation</span>
+        <span>Input sync animation</span>
       </label>
     </section>
   );

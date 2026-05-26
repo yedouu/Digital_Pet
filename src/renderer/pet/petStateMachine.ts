@@ -12,14 +12,6 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
     return event.payload.state;
   }
 
-  if (event.type === "INPUT_SYNC_KEYBOARD" && state !== "hidden" && state !== "menu" && state !== "drag") {
-    return "syncKeyboard";
-  }
-
-  if (event.type === "INPUT_SYNC_MOUSE" && state !== "hidden" && state !== "menu" && state !== "drag") {
-    return "syncMouse";
-  }
-
   if (state === "hidden" && event.type === "SHOW") {
     return "idle";
   }
@@ -36,6 +28,10 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
           return "think";
         case "DRAG_START":
           return "drag";
+        case "INPUT_SYNC_KEYBOARD":
+          return "syncKeyboard";
+        case "INPUT_SYNC_MOUSE":
+          return "syncMouse";
         case "MOUSE_NEAR":
           return "look";
         case "CLICK_CHAIN":
@@ -127,6 +123,10 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
       switch (event.type) {
         case "ANIMATION_END":
           return "idle";
+        case "INPUT_SYNC_KEYBOARD":
+          return "syncKeyboard";
+        case "INPUT_SYNC_MOUSE":
+          return "syncMouse";
         case "DRAG_START":
           return "drag";
         case "RIGHT_CLICK":
