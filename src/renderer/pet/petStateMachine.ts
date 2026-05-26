@@ -1,3 +1,4 @@
+import type { PetAction } from "../ai/characterTypes";
 import type { PetEvent, PetState } from "./petTypes";
 import { interactionEffects } from "./petConfig";
 
@@ -6,6 +7,14 @@ const timeIdleStates: PetState[] = ["idle", "wakeup", "energetic", "sleepy"];
 export function petReducer(state: PetState, event: PetEvent): PetState {
   if (event.type === "HIDE") {
     return "hidden";
+  }
+
+  if (event.type === "FORCE_ACTION" && state !== "hidden") {
+    return actionToState(event.payload.action);
+  }
+
+  if (event.type === "AI_REPLY" && state !== "hidden") {
+    return "talk";
   }
 
   if (event.type === "TIME_IDLE_STATE" && timeIdleStates.includes(state)) {
@@ -160,5 +169,21 @@ export function petReducer(state: PetState, event: PetEvent): PetState {
 
     default:
       return state;
+  }
+}
+
+function actionToState(action: PetAction): PetState {
+  switch (action) {
+    case "happy":
+      return "happy";
+    case "think":
+      return "think";
+    case "talk":
+      return "talk";
+    case "sleep":
+      return "sleep";
+    case "idle":
+    default:
+      return "idle";
   }
 }

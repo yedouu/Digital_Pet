@@ -5,6 +5,15 @@ import Pet, { closePetWindow, hidePetWindow } from "./components/Pet";
 import SettingsPanel from "./components/SettingsPanel";
 import SpeechBubble, { type BubbleType, type SpeechBubbleData } from "./components/SpeechBubble";
 import { appConfig } from "./config/appConfig";
+import { giftConfig } from "./ai/giftConfig";
+import type { PetAction, PetAIReply } from "./ai/characterTypes";
+import {
+  addRecentMessage,
+  hasSeenFirstLaunch,
+  loadPetMemory,
+  markFirstLaunchSeen,
+  savePetMemory
+} from "./ai/memoryService";
 import { resetIdleTimer } from "./pet/idleTimer";
 import { clickReplies, pickRandom, randomReplies } from "./pet/petConfig";
 import { petReducer } from "./pet/petStateMachine";
@@ -70,12 +79,45 @@ export default function App() {
   const [replyText, setReplyText] = useState("");
   const [contextMenuPosition, setContextMenuPosition] = useState<ContextMenuPosition>({ x: 20, y: 20 });
   const latestReplyRef = useRef("");
+  const latestReplyActionRef = useRef<PetAction>("talk");
+  const pendingReplyTimerRef = useRef<number | null>(null);
 
   const showBubble = useCallback(
     (text: string, type: BubbleType = "normal", duration = 3600, closable = duration <= 0) => {
       setBubble(createBubble(text, type, duration, closable));
     },
     []
+  );
+
+  const showReply = useCallback(
+    (reply: PetAIReply) => {
+      latestReplyRef.current = reply.text;
+      latestReplyActionRef.current = reply.action;
+      setReplyText(reply.text);
+      showBubble(reply.text, "normal", replyVisibleMs, true);
+      dispatch({ type: "AI_REPLY", payload: reply });
+    },
+    [showBubble]
+  );
+
+  const playReply = useCallback(
+    (reply: PetAIReply) => {
+      if (pendingReplyTimerRef.current) {
+        window.clearTimeout(pendingReplyTimerRef.current);
+      }
+
+      if (reply.action === "happy" || reply.action === "think") {
+        dispatch({ type: "FORCE_ACTION", payload: { action: reply.action } });
+        pendingReplyTimerRef.current = window.setTimeout(() => {
+          pendingReplyTimerRef.current = null;
+          showReply(reply);
+        }, reply.action === "happy" ? 1100 : 800);
+        return;
+      }
+
+      showReply(reply);
+    },
+    [showReply]
   );
 
   const sendEvent = useCallback(
@@ -119,22 +161,31 @@ export default function App() {
         case "USER_MESSAGE":
           showBubble("Let me think...", "thinking", 0, false);
           dispatch(event);
-          getPetReply(event.payload.text, chatMode, { deepseekApiKey, timeZoneMode })
+          {
+            const memory = addRecentMessage(loadPetMemory(), "user", event.payload.text);
+
+            getPetReply(event.payload.text, chatMode, {
+              deepseekApiKey,
+              timeZoneMode,
+              userNickname: memory.userNickname,
+              memorySummary: memory.memorySummary,
+              recentMessages: memory.recentMessages
+            })
             .then((reply) => {
-              latestReplyRef.current = reply;
-              setReplyText(reply);
-              showBubble(reply, "normal", replyVisibleMs, true);
-              dispatch({ type: "AI_REPLY", payload: { text: reply } });
+              savePetMemory(addRecentMessage(memory, "assistant", JSON.stringify(reply)));
+              playReply(reply);
             })
             .catch((error: unknown) => {
               const message = error instanceof Error ? error.message : "I could not reply right now.";
               showBubble(message, "error", replyVisibleMs, true);
               dispatch({ type: "AI_ERROR", payload: { message } });
             });
+          }
           return;
 
         case "AI_REPLY":
           latestReplyRef.current = event.payload.text;
+          latestReplyActionRef.current = event.payload.action;
           setReplyText(event.payload.text);
           showBubble(event.payload.text, "normal", replyVisibleMs, true);
           dispatch(event);
@@ -163,7 +214,7 @@ export default function App() {
           dispatch(event);
       }
     },
-    [chatMode, deepseekApiKey, showBubble, state, timeZoneMode]
+    [chatMode, deepseekApiKey, playReply, showBubble, state, timeZoneMode]
   );
 
   useEffect(() => {
@@ -192,6 +243,31 @@ export default function App() {
     const timer = window.setTimeout(() => setChatOpen(false), chatVisibleMs);
     return () => window.clearTimeout(timer);
   }, [chatOpen]);
+
+  useEffect(() => {
+    if (hasSeenFirstLaunch()) {
+      return;
+    }
+
+    markFirstLaunchSeen();
+    latestReplyRef.current = giftConfig.firstOpenMessage;
+    latestReplyActionRef.current = "happy";
+    setReplyText(giftConfig.firstOpenMessage);
+    showBubble(giftConfig.firstOpenMessage, "system", replyVisibleMs, true);
+    dispatch({ type: "FORCE_ACTION", payload: { action: "happy" } });
+
+    let finished = false;
+    speak(giftConfig.firstOpenMessage, () => {
+      if (!finished) {
+        finished = true;
+        dispatch({ type: "ANIMATION_END" });
+      }
+    });
+
+    return () => {
+      finished = true;
+    };
+  }, [showBubble]);
 
   useEffect(() => {
     let cancelled = false;
@@ -256,7 +332,11 @@ export default function App() {
       () => {
         if (!finished && latestReplyRef.current === replyText) {
           finished = true;
-          dispatch({ type: "TTS_END" });
+          if (latestReplyActionRef.current === "sleep") {
+            dispatch({ type: "FORCE_ACTION", payload: { action: "sleep" } });
+          } else {
+            dispatch({ type: "TTS_END" });
+          }
         }
       },
       () => {
@@ -270,6 +350,14 @@ export default function App() {
       finished = true;
     };
   }, [replyText, showBubble, state]);
+
+  useEffect(() => {
+    return () => {
+      if (pendingReplyTimerRef.current) {
+        window.clearTimeout(pendingReplyTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     function handleTrayShow() {

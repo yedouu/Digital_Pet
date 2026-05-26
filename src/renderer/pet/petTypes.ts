@@ -1,3 +1,5 @@
+import type { PetAction, PetEmotion } from "../ai/characterTypes";
+
 export type PetState =
   | "idle"
   | "wakeup"
@@ -29,8 +31,9 @@ export type PetEvent =
   | { type: "CLICK_CHAIN" }
   | { type: "HOVER_TIMEOUT" }
   | { type: "USER_MESSAGE"; payload: { text: string } }
-  | { type: "AI_REPLY"; payload: { text: string } }
+  | { type: "AI_REPLY"; payload: { text: string; action: PetAction; emotion: PetEmotion } }
   | { type: "AI_ERROR"; payload: { message: string } }
+  | { type: "FORCE_ACTION"; payload: { action: PetAction } }
   | { type: "TTS_START" }
   | { type: "TTS_END" }
   | { type: "IDLE_TIMEOUT" }
