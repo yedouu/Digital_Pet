@@ -190,14 +190,37 @@ src-tauri/target/release/bundle/
 
 ## 更新方式
 
-当前推荐使用 GitHub Release 手动更新：
+Bubu 已接入 Tauri Updater。应用启动后会自动检查 GitHub Release 里的更新信息；如果发现新版本，会提示用户下载并安装。
 
-1. 开发者构建新版安装包。
-2. 上传到 GitHub Releases。
-3. 用户下载新版安装包。
-4. 用户直接运行新版安装包覆盖安装。
+自动更新依赖这个 Release 文件：
 
-通常不需要先卸载旧版本。只要应用的 `identifier` 和 `productName` 保持一致，并递增版本号，安装包会识别为同一个应用的新版本。
+```text
+https://github.com/yedouu/Digital_Pet/releases/latest/download/latest.json
+```
+
+发布新版本时需要：
+
+1. 递增 `package.json` 和 `src-tauri/tauri.conf.json` 里的版本号。
+2. 设置签名私钥环境变量。
+3. 构建安装包。
+4. 生成 `latest.json`。
+5. 把安装包、对应 `.sig` 文件和 `latest.json` 上传到 GitHub Release。
+
+Windows PowerShell 示例：
+
+```powershell
+$env:TAURI_SIGNING_PRIVATE_KEY=(Get-Content .tauri/bubu-updater.key -Raw)
+$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD="<your_key_password>"
+npm.cmd run tauri:build
+npm.cmd run release:latest-json
+```
+
+注意：
+
+- `.tauri/bubu-updater.key` 是本机私钥，不能提交到仓库。
+- 仓库里只保存公钥，用来验证更新包来自可信来源。
+- 没有 `latest.json` 或没有新版本时，应用启动检查会安静失败，不影响正常使用。
+- Windows 安装更新时，程序可能会自动退出，这是 Tauri Windows 安装器的正常行为。
 
 ## 开发者常用命令
 

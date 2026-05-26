@@ -31,6 +31,18 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "icon": ["icons/icon.ico"]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEUxOEY1QTU4MjQwNDREODUKUldTRlRRUWtXRnFQNGZNVnFtM1NQNVl1NHozMXVwNXlEd3U5NUx4MkFyOWFuRWN2RUFsWS92cUcK",
+      "endpoints": [
+        "https://github.com/yedouu/Digital_Pet/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

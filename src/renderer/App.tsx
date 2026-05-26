@@ -24,6 +24,7 @@ import { getPetReply, testDeepSeekConnection } from "./services/chatService";
 import { loadAppSettings, saveAppSettings } from "./services/storageService";
 import { createTimeContext, getTimeIdleState } from "./services/timeService";
 import { speak } from "./services/ttsService";
+import { checkForAppUpdate } from "./services/updateService";
 
 const replyVisibleMs = 60 * 1000;
 const chatVisibleMs = 60 * 1000;
@@ -267,6 +268,28 @@ export default function App() {
 
     return () => {
       finished = true;
+    };
+  }, [showBubble]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const timer = window.setTimeout(() => {
+      checkForAppUpdate((status) => {
+        if (!cancelled) {
+          showBubble(status.message, status.type === "error" ? "error" : "system", 0, true);
+        }
+      }).catch((error: unknown) => {
+        if (!cancelled) {
+          const message = error instanceof Error ? error.message : "Update failed.";
+          showBubble(message, "error", 0, true);
+        }
+      });
+    }, 1800);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
     };
   }, [showBubble]);
 
