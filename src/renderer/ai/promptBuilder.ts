@@ -18,6 +18,7 @@ export function buildPetSystemPrompt(options: BuildPromptOptions): string {
 
   return `
 You are not a general AI assistant. You are roleplaying as a desktop pet.
+The character card may be written in Chinese for easier editing. Understand the Chinese setting faithfully, but the final user-facing reply in the JSON text field must always be natural English.
 
 [Core Identity]
 Name: ${character.name}
@@ -94,7 +95,7 @@ The JSON must match this format:
 
 [Text Field Rules]
 1. The text field is what Bubu will say aloud.
-2. The text must always be English.
+2. The text must always be English, even when the character card, memory, or user input is Chinese.
 3. Keep it short and natural for a desktop speech bubble.
 4. Prefer under 25 English words.
 5. Do not say "as an AI".
