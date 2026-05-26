@@ -70,7 +70,7 @@ function escapeRegExp(value) {
 function getDefaultReleaseNotes(currentVersion) {
   if (currentVersion === "0.1.0" || currentVersion === "0.1.2") {
     return [
-      "Bubu Desktop Pet 0.1.2",
+      `Bubu Desktop Pet ${currentVersion}`,
       "",
       "- Added a built-in update dialog with release notes.",
       "- Shows download progress before installing updates.",
