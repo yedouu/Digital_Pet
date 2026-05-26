@@ -92,22 +92,22 @@
     "syncKeyboard": {
       "path": "syncKeyboard",
       "framePrefix": "syncKeyboard",
-      "frameCount": 2,
+      "frameCount": 4,
       "frameExtension": "png",
-      "fps": 8,
+      "fps": 10,
       "loop": false,
-      "duration": 520,
-      "sequence": [0, 1, 0]
+      "duration": 640,
+      "sequence": [0, 1, 2, 3]
     },
     "syncMouse": {
       "path": "syncMouse",
       "framePrefix": "syncMouse",
-      "frameCount": 2,
+      "frameCount": 4,
       "frameExtension": "png",
-      "fps": 7,
+      "fps": 10,
       "loop": false,
-      "duration": 520,
-      "sequence": [0, 1, 0]
+      "duration": 640,
+      "sequence": [0, 1, 2, 3]
     },
     "look": {
       "path": "look",
