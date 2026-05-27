@@ -1,6 +1,6 @@
 [package]
 name = "desktop-pet-mvp"
-version = "0.1.3"
+version = "1.0.0"
 description = "Desktop pet MVP"
 authors = ["Kaijin"]
 edition = "2021"
