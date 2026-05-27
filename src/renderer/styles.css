@@ -268,11 +268,18 @@ select {
   box-shadow: 0 12px 26px rgba(33, 43, 52, 0.18);
 }
 
-.focus-timer {
+.focus-timer-wrap {
   position: absolute;
   right: 12px;
   top: 64px;
   z-index: 4;
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+  pointer-events: auto;
+}
+
+.focus-timer {
   display: grid;
   gap: 1px;
   min-width: 76px;
@@ -282,7 +289,8 @@ select {
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 10px 24px rgba(33, 43, 52, 0.16);
   color: #25313a;
-  pointer-events: none;
+  cursor: pointer;
+  text-align: left;
 }
 
 .focus-timer span {
@@ -297,6 +305,111 @@ select {
 
 .focus-timer-paused {
   background: rgba(244, 248, 239, 0.96);
+}
+
+.focus-timer-menu {
+  display: grid;
+  gap: 4px;
+  width: 76px;
+  padding: 5px;
+  border: 1px solid rgba(42, 55, 65, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 12px 26px rgba(33, 43, 52, 0.18);
+}
+
+.focus-timer-menu button {
+  min-height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #283640;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.focus-timer-menu button:hover {
+  background: #eef5f3;
+}
+
+.focus-panel {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 54px;
+  z-index: 8;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(42, 55, 65, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 14px 34px rgba(33, 43, 52, 0.22);
+}
+
+.focus-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.focus-panel-header button,
+.focus-presets button,
+.focus-panel-actions button {
+  border: 0;
+  border-radius: 6px;
+  background: #eef2f3;
+  color: #283640;
+  cursor: pointer;
+}
+
+.focus-panel-header button {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+}
+
+.focus-presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.focus-presets button,
+.focus-panel-actions button {
+  min-height: 30px;
+  font-size: 12px;
+}
+
+.focus-presets .focus-preset-active,
+.focus-panel-actions .focus-primary {
+  background: #3f7180;
+  color: #fff;
+}
+
+.focus-custom {
+  display: grid;
+  grid-template-columns: 1fr 72px;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.focus-custom input {
+  min-width: 0;
+  height: 30px;
+  border: 1px solid #bac8d0;
+  border-radius: 6px;
+  padding: 0 8px;
+}
+
+.focus-panel-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
 }
 
 .chat-box input,

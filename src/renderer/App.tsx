@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import ChatBox from "./components/ChatBox";
 import ContextMenu, { type ContextMenuPosition } from "./components/ContextMenu";
+import FocusPanel from "./components/FocusPanel";
 import FocusTimer from "./components/FocusTimer";
 import Pet, { closePetWindow, hidePetWindow } from "./components/Pet";
 import SettingsPanel from "./components/SettingsPanel";
@@ -24,7 +25,15 @@ import {
 } from "./ai/memoryService";
 import { buildFocusCompleteReply, handleFocusIntent } from "./focus/focusIntentHandler";
 import { parseFocusIntent } from "./focus/focusIntentParser";
-import { loadFocusState, normalizeFocusState, saveFocusState } from "./focus/focusService";
+import {
+  cancelFocusSession,
+  loadFocusState,
+  normalizeFocusState,
+  pauseFocusSession,
+  resumeFocusSession,
+  saveFocusState,
+  startFocusSession
+} from "./focus/focusService";
 import type { FocusState } from "./focus/focusTypes";
 import { resetIdleTimer } from "./pet/idleTimer";
 import { clickReplies, pickRandom, randomReplies } from "./pet/petConfig";
@@ -99,6 +108,8 @@ export default function App() {
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
   const [updateInstalling, setUpdateInstalling] = useState(false);
   const [focusState, setFocusState] = useState<FocusState>(() => loadFocusState());
+  const [focusPanelOpen, setFocusPanelOpen] = useState(false);
+  const [focusMinutes, setFocusMinutes] = useState(25);
   const [contextMenuPosition, setContextMenuPosition] = useState<ContextMenuPosition>({ x: 20, y: 20 });
   const latestReplyRef = useRef("");
   const latestReplyActionRef = useRef<PetAction>("talk");
@@ -193,7 +204,7 @@ export default function App() {
           dispatch(event);
           {
             const memory = addRecentMessage(loadPetMemory(), "user", event.payload.text);
-            const memoryIntent = parseMemoryIntent(event.payload.text);
+            const memoryIntent = appConfig.features.memorySystem ? parseMemoryIntent(event.payload.text) : null;
 
             if (memoryIntent) {
               const { memory: nextMemory, reply } = handleMemoryIntent(memory, memoryIntent);
@@ -202,7 +213,9 @@ export default function App() {
               return;
             }
 
-            const focusIntent = parseFocusIntent(event.payload.text);
+            const focusIntent = appConfig.features.focusTimer && appConfig.features.focusChatCommands
+              ? parseFocusIntent(event.payload.text)
+              : null;
 
             if (focusIntent) {
               const result = handleFocusIntent(focusIntent, focusState);
@@ -294,6 +307,10 @@ export default function App() {
   }, [chatOpen]);
 
   useEffect(() => {
+    if (!appConfig.features.focusTimer) {
+      return;
+    }
+
     const timer = window.setInterval(() => {
       setFocusState((current) => {
         const next = normalizeFocusState(current);
@@ -315,7 +332,7 @@ export default function App() {
   }, [playReply]);
 
   useEffect(() => {
-    if (hasSeenFirstLaunch()) {
+    if (!appConfig.features.firstLaunchGreeting || hasSeenFirstLaunch()) {
       return;
     }
 
@@ -343,6 +360,10 @@ export default function App() {
     let cancelled = false;
 
     const timer = window.setTimeout(() => {
+      if (!appConfig.features.updater) {
+        return;
+      }
+
       checkForAvailableUpdate().then((info) => {
         if (!cancelled && info) {
           setUpdateInfo(info);
@@ -498,6 +519,50 @@ export default function App() {
     showBubble("First launch greeting will replay next time.", "system", 0, true);
   }
 
+  function startFocusFromPanel(mode: "focus" | "break") {
+    const nextState = startFocusSession(mode, focusMinutes);
+    setFocusState(nextState);
+    saveFocusState(nextState);
+    setFocusPanelOpen(false);
+    playReply({
+      action: "happy",
+      emotion: mode === "focus" ? "happy" : "caring",
+      text: mode === "focus"
+        ? `Okay. Bubu will guard your ${focusMinutes}-minute focus time.`
+        : `Rest for ${focusMinutes} minutes. Bubu will call you back.`
+    });
+  }
+
+  function updateFocusState(nextState: FocusState, reply: PetAIReply) {
+    setFocusState(nextState);
+    saveFocusState(nextState);
+    playReply(reply);
+  }
+
+  function handleFocusPause() {
+    updateFocusState(pauseFocusSession(focusState), {
+      action: "talk",
+      emotion: "thinking",
+      text: "Paused. Bubu will keep your place."
+    });
+  }
+
+  function handleFocusResume() {
+    updateFocusState(resumeFocusSession(focusState), {
+      action: "happy",
+      emotion: "happy",
+      text: "Back to it. Bubu is with you."
+    });
+  }
+
+  function handleFocusCancel() {
+    updateFocusState(cancelFocusSession(), {
+      action: "talk",
+      emotion: "neutral",
+      text: "Focus timer ended. Bubu is still here."
+    });
+  }
+
   async function handleInstallUpdate() {
     setUpdateInstalling(true);
     setUpdateStatus({ type: "info", message: "Preparing update..." });
@@ -515,7 +580,14 @@ export default function App() {
   return (
     <main className={`app app-${state}`} onPointerDown={() => state === "menu" && sendEvent({ type: "MENU_CLOSE" })}>
       <SpeechBubble bubble={bubble} onClose={() => setBubble(null)} />
-      <FocusTimer session={focusState.session} />
+      {appConfig.features.focusTimer ? (
+        <FocusTimer
+          session={focusState.session}
+          onPause={handleFocusPause}
+          onResume={handleFocusResume}
+          onCancel={handleFocusCancel}
+        />
+      ) : null}
       <Pet state={state} onEvent={sendEvent} onContextMenuPosition={setContextMenuPosition} />
       <ChatBox open={chatOpen} onClose={() => setChatOpen(false)} onSend={handleSendMessage} />
       <ContextMenu
@@ -525,11 +597,21 @@ export default function App() {
           setChatOpen(true);
           showBubble("What would you like to say?", "system", 3000);
         }}
+        onFocus={() => setFocusPanelOpen(true)}
         onRandomLine={handleRandomLine}
         onHide={() => sendEvent({ type: "HIDE" })}
         onSettings={handleSettingsOpen}
         onExit={closePetWindow}
         onClose={() => sendEvent({ type: "MENU_CLOSE" })}
+        focusEnabled={appConfig.features.focusTimer}
+      />
+      <FocusPanel
+        open={appConfig.features.focusTimer && focusPanelOpen}
+        selectedMinutes={focusMinutes}
+        onMinutesChange={setFocusMinutes}
+        onStartFocus={() => startFocusFromPanel("focus")}
+        onStartBreak={() => startFocusFromPanel("break")}
+        onClose={() => setFocusPanelOpen(false)}
       />
       <SettingsPanel
         open={settingsOpen}

@@ -249,7 +249,7 @@ export default function Pet({ state, onEvent, onContextMenuPosition }: PetProps)
     clearHoverTimer();
     onContextMenuPosition({
       x: Math.min(Math.max(event.clientX, 6), window.innerWidth - 134),
-      y: Math.min(Math.max(event.clientY, 6), window.innerHeight - 158)
+      y: Math.min(Math.max(event.clientY, 6), window.innerHeight - 188)
     });
     onEvent({ type: "RIGHT_CLICK" });
   }

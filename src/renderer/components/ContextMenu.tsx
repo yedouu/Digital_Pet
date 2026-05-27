@@ -1,4 +1,4 @@
-import { EyeOff, MessageCircle, Power, RefreshCcw, Settings } from "lucide-react";
+import { EyeOff, MessageCircle, Power, RefreshCcw, Settings, Timer } from "lucide-react";
 
 export interface ContextMenuPosition {
   x: number;
@@ -9,22 +9,26 @@ interface ContextMenuProps {
   open: boolean;
   position: ContextMenuPosition;
   onChat: () => void;
+  onFocus: () => void;
   onRandomLine: () => void;
   onHide: () => void;
   onSettings: () => void;
   onExit: () => void;
   onClose: () => void;
+  focusEnabled?: boolean;
 }
 
 export default function ContextMenu({
   open,
   position,
   onChat,
+  onFocus,
   onRandomLine,
   onHide,
   onSettings,
   onExit,
-  onClose
+  onClose,
+  focusEnabled = true
 }: ContextMenuProps) {
   if (!open) {
     return null;
@@ -45,6 +49,12 @@ export default function ContextMenu({
         <MessageCircle size={15} />
         <span>Chat</span>
       </button>
+      {focusEnabled ? (
+        <button type="button" onClick={() => run(onFocus)}>
+          <Timer size={15} />
+          <span>Focus</span>
+        </button>
+      ) : null}
       <button type="button" onClick={() => run(onRandomLine)}>
         <RefreshCcw size={15} />
         <span>New line</span>
