@@ -268,6 +268,37 @@ select {
   box-shadow: 0 12px 26px rgba(33, 43, 52, 0.18);
 }
 
+.focus-timer {
+  position: absolute;
+  right: 12px;
+  top: 64px;
+  z-index: 4;
+  display: grid;
+  gap: 1px;
+  min-width: 76px;
+  padding: 7px 9px;
+  border: 1px solid rgba(42, 55, 65, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 24px rgba(33, 43, 52, 0.16);
+  color: #25313a;
+  pointer-events: none;
+}
+
+.focus-timer span {
+  color: #6c7980;
+  font-size: 11px;
+}
+
+.focus-timer strong {
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.focus-timer-paused {
+  background: rgba(244, 248, 239, 0.96);
+}
+
 .chat-box input,
 .settings-panel input,
 .settings-panel select {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import ChatBox from "./components/ChatBox";
 import ContextMenu, { type ContextMenuPosition } from "./components/ContextMenu";
+import FocusTimer from "./components/FocusTimer";
 import Pet, { closePetWindow, hidePetWindow } from "./components/Pet";
 import SettingsPanel from "./components/SettingsPanel";
 import SpeechBubble, { type BubbleType, type SpeechBubbleData } from "./components/SpeechBubble";
@@ -10,12 +11,21 @@ import { giftConfig } from "./ai/giftConfig";
 import type { PetAction, PetAIReply } from "./ai/characterTypes";
 import {
   addRecentMessage,
+  addMemory,
+  buildMemorySummary,
+  deleteMemory,
+  formatMemoryList,
   hasSeenFirstLaunch,
   loadPetMemory,
   markFirstLaunchSeen,
+  parseMemoryIntent,
   resetFirstLaunch,
   savePetMemory
 } from "./ai/memoryService";
+import { buildFocusCompleteReply, handleFocusIntent } from "./focus/focusIntentHandler";
+import { parseFocusIntent } from "./focus/focusIntentParser";
+import { loadFocusState, normalizeFocusState, saveFocusState } from "./focus/focusService";
+import type { FocusState } from "./focus/focusTypes";
 import { resetIdleTimer } from "./pet/idleTimer";
 import { clickReplies, pickRandom, randomReplies } from "./pet/petConfig";
 import { petReducer } from "./pet/petStateMachine";
@@ -88,6 +98,7 @@ export default function App() {
   const [updateInfo, setUpdateInfo] = useState<AppUpdateInfo | null>(null);
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
   const [updateInstalling, setUpdateInstalling] = useState(false);
+  const [focusState, setFocusState] = useState<FocusState>(() => loadFocusState());
   const [contextMenuPosition, setContextMenuPosition] = useState<ContextMenuPosition>({ x: 20, y: 20 });
   const latestReplyRef = useRef("");
   const latestReplyActionRef = useRef<PetAction>("talk");
@@ -139,7 +150,15 @@ export default function App() {
 
       switch (event.type) {
         case "CLICK":
-          showBubble(state === "sleep" ? "I'm awake." : pickRandom(clickReplies), "normal", 3200);
+          showBubble(
+            focusState.session?.status === "running" && focusState.session.mode === "focus"
+              ? "Tiny steps. Keep going."
+              : state === "sleep"
+                ? "I'm awake."
+                : pickRandom(clickReplies),
+            "normal",
+            3200
+          );
           dispatch(event);
           return;
 
@@ -174,12 +193,31 @@ export default function App() {
           dispatch(event);
           {
             const memory = addRecentMessage(loadPetMemory(), "user", event.payload.text);
+            const memoryIntent = parseMemoryIntent(event.payload.text);
+
+            if (memoryIntent) {
+              const { memory: nextMemory, reply } = handleMemoryIntent(memory, memoryIntent);
+              savePetMemory(addRecentMessage(nextMemory, "assistant", JSON.stringify(reply)));
+              playReply(reply);
+              return;
+            }
+
+            const focusIntent = parseFocusIntent(event.payload.text);
+
+            if (focusIntent) {
+              const result = handleFocusIntent(focusIntent, focusState);
+              setFocusState(result.state);
+              saveFocusState(result.state);
+              savePetMemory(addRecentMessage(memory, "assistant", JSON.stringify(result.reply)));
+              playReply(result.reply);
+              return;
+            }
 
             getPetReply(event.payload.text, chatMode, {
               deepseekApiKey,
               timeZoneMode,
               userNickname: memory.userNickname,
-              memorySummary: memory.memorySummary,
+              memorySummary: buildMemorySummary(memory),
               recentMessages: memory.recentMessages
             })
             .then((reply) => {
@@ -225,7 +263,7 @@ export default function App() {
           dispatch(event);
       }
     },
-    [chatMode, deepseekApiKey, playReply, showBubble, state, timeZoneMode]
+    [chatMode, deepseekApiKey, focusState, playReply, showBubble, state, timeZoneMode]
   );
 
   useEffect(() => {
@@ -254,6 +292,27 @@ export default function App() {
     const timer = window.setTimeout(() => setChatOpen(false), chatVisibleMs);
     return () => window.clearTimeout(timer);
   }, [chatOpen]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setFocusState((current) => {
+        const next = normalizeFocusState(current);
+
+        if (next.completedSession) {
+          const completed = next.completedSession;
+          const finalState = { session: null };
+          saveFocusState(finalState);
+          playReply(buildFocusCompleteReply(completed.mode));
+          return finalState;
+        }
+
+        saveFocusState(next);
+        return next.session ? { session: { ...next.session } } : next;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [playReply]);
 
   useEffect(() => {
     if (hasSeenFirstLaunch()) {
@@ -456,6 +515,7 @@ export default function App() {
   return (
     <main className={`app app-${state}`} onPointerDown={() => state === "menu" && sendEvent({ type: "MENU_CLOSE" })}>
       <SpeechBubble bubble={bubble} onClose={() => setBubble(null)} />
+      <FocusTimer session={focusState.session} />
       <Pet state={state} onEvent={sendEvent} onContextMenuPosition={setContextMenuPosition} />
       <ChatBox open={chatOpen} onClose={() => setChatOpen(false)} onSend={handleSendMessage} />
       <ContextMenu
@@ -500,4 +560,45 @@ export default function App() {
       />
     </main>
   );
+}
+
+function handleMemoryIntent(
+  memory: ReturnType<typeof loadPetMemory>,
+  intent: NonNullable<ReturnType<typeof parseMemoryIntent>>
+): { memory: ReturnType<typeof loadPetMemory>; reply: PetAIReply } {
+  switch (intent.type) {
+    case "add": {
+      const nextMemory = addMemory(memory, intent.content);
+      return {
+        memory: nextMemory,
+        reply: {
+          action: "happy",
+          emotion: "happy",
+          text: "Got it. Bubu will remember that."
+        }
+      };
+    }
+
+    case "view":
+      return {
+        memory,
+        reply: {
+          action: "talk",
+          emotion: "thinking",
+          text: formatMemoryList(memory)
+        }
+      };
+
+    case "delete": {
+      const result = deleteMemory(memory, intent.target);
+      return {
+        memory: result.memory,
+        reply: {
+          action: "talk",
+          emotion: "neutral",
+          text: result.deletedCount > 0 ? "Memory deleted." : "Tell Bubu which memory to delete."
+        }
+      };
+    }
+  }
 }
