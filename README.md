@@ -1,14 +1,14 @@
 # Bubu 桌面宠物使用说明
 
-Bubu 是一个会停在桌面上的小熊宠物。它可以播放动画、拖动位置、聊天、朗读回复，并根据时间切换不同待机状态。
+Bubu 是一个透明悬浮在桌面上的小熊宠物。它可以播放动画、拖动位置、聊天、朗读回复、记住用户明确要求记住的信息，也可以陪用户进行番茄钟专注。
 
 ## 快速开始
 
-普通用户建议从 GitHub Releases 下载最新版安装包：
+普通用户建议从 GitHub Releases 下载最新安装包：
 
 [GitHub Releases](https://github.com/yedouu/Digital_Pet/releases)
 
-下载后运行安装包，安装完成后打开 `Bubu Desktop Pet` 即可。
+下载安装包后运行安装，安装完成后打开 `Bubu Desktop Pet` 即可。
 
 如果你是从源码运行：
 
@@ -19,145 +19,60 @@ npm.cmd run tauri:dev
 
 ## 基本操作
 
-- 单击 Bubu：播放开心反应，并显示一句小气泡。
+- 单击 Bubu：播放开心反应，专注中会显示短鼓励。
 - 双击 Bubu：打开聊天框。
-- 拖动 Bubu：按住宠物移动到桌面任意位置，松开后会保存位置。
-- 右键 Bubu：打开菜单。
-- 长时间不操作：Bubu 会根据当前选择的时区和时间自动切换待机状态。
+- 拖动 Bubu：移动到桌面任意位置，松开后保存位置。
+- 右键 Bubu：打开菜单，可聊天、换句话、隐藏、设置、退出。
+- 长时间待机：Bubu 会根据所选时区和时间切换待机表情。
 
-右键菜单支持聊天、换一句话、隐藏、设置和退出。隐藏后可以通过系统托盘图标重新显示 Bubu。
+## 聊天、记忆与番茄钟
 
-## 聊天与朗读
+Bubu 支持 `DeepSeek API` 和 `Local fallback` 两种模式。DeepSeek 不可用时会自动切换到本地兜底回复。
 
-双击 Bubu 打开聊天框后，可以输入文字并按 `Enter` 或点击发送。
-
-Bubu 会先进入思考状态，然后显示回复气泡，并用 TTS 朗读。回复气泡不会立刻消失，可以手动关闭。
-
-目前支持两种聊天模式：
-
-- `DeepSeek API`：使用 DeepSeek 接口回复。
-- `Local fallback`：本地兜底回复，不需要联网，回答会比较简单。
-
-如果 DeepSeek 不可用，程序会自动切换到本地兜底模式。
-
-## 布布角色系统
-
-现在 Bubu 已经不是普通问答助手，而是带角色设定的桌面小熊。
-
-Bubu 的设定是：圆滚滚的棕色小熊，脸颊有黄色腮红，语气温柔、可爱、陪伴感强，会鼓励用户、提醒休息，也会轻轻撒娇。
-
-AI 回复会返回结构化结果，例如：
-
-```json
-{
-  "action": "happy",
-  "emotion": "caring",
-  "text": "辛苦啦，布布抱抱你，先休息一下下~"
-}
-```
-
-程序会根据 `action` 控制动画：
-
-- `happy`：先播放开心动作，再说话。
-- `think`：先播放思考动作，再说话。
-- `talk`：直接说话。
-- `sleep`：说完后进入睡觉状态。
-- `idle`：保持普通状态。
-
-Bubu 还会保存最近几轮聊天作为短期记忆，让对话更连贯。第一次启动时，Bubu 会播放专属欢迎语。
-
-## 角色卡怎么使用和修改
-
-角色卡主要写在：
+轻量记忆只在用户明确要求时写入，例如：
 
 ```text
-src/renderer/ai/bubuCharacter.ts
+布布记住 我喜欢晚上学习
+记住 我的生日是 5 月 20 日
+帮我记住 我不喜欢太长的回复
 ```
 
-如果想修改 Bubu 的性格、说话方式、口头禅、边界规则或示例对话，优先改这个文件。
-
-常见可改内容：
-
-- `personality`：控制 Bubu 的性格，比如温柔、活泼、黏人。
-- `relationship`：控制 Bubu 和用户的关系设定。
-- `speechStyle`：控制回复风格，比如简短、可爱、不要 Markdown。
-- `catchphrases`：控制常用口头禅。
-- `boundaries`：控制不能说什么、不能做什么。
-- `exampleDialogues`：给 AI 示例对话，用来稳定 Bubu 的语气和动作选择。
-
-AI 的输出格式规则写在：
+查看和删除记忆：
 
 ```text
-src/renderer/ai/promptBuilder.ts
+查看记忆
+你记住了什么
+删除记忆 晚上学习
 ```
 
-如果想调整 AI 必须返回哪些字段、每次回复多长、动作选择规则，就改这里。
-
-AI 返回结果的兜底解析写在：
+番茄钟指令示例：
 
 ```text
-src/renderer/ai/replyParser.ts
+我要专注 25 分钟
+陪我学习 30 分钟
+开始番茄钟
+休息 5 分钟
+暂停专注
+继续专注
+取消专注
+还有多久
 ```
 
-如果 AI 偶尔没有按 JSON 返回，这里会尽量提取 JSON，并把非法的 `action` / `emotion` 自动换成安全默认值。
-
-短期记忆保存在浏览器本地存储里，逻辑在：
-
-```text
-src/renderer/ai/memoryService.ts
-```
-
-目前记忆只保存最近几轮聊天，不会上传到仓库。想重置记忆，可以清空应用的本地数据。
-
-首次启动欢迎语写在：
-
-```text
-src/renderer/ai/giftConfig.ts
-```
-
-如果要把 Bubu 改成更私人化的礼物，可以从这里修改欢迎语、称呼和祝福语。
-
-修改角色卡后，建议先运行：
-
-```powershell
-npm.cmd run build
-```
-
-构建通过后再运行：
-
-```powershell
-npm.cmd run tauri:dev
-```
-
-这样可以先确认类型没有写错，再实际测试 Bubu 的回复效果。
+专注中会显示倒计时小组件；时间结束后，Bubu 会提醒休息或回到学习。
 
 ## 设置说明
 
-打开右键菜单，点击 `Settings` 可以进入设置。
+右键 Bubu，点击 `Settings` 可以进入设置。
 
-### Chat mode
+常用设置：
 
-选择聊天模式：
+- Chat mode：选择 `DeepSeek API` 或 `Local fallback`。
+- Bubu time：选择 `South Africa time` 或 `China time`。
+- DeepSeek API Key：填写 DeepSeek API Key。
+- Start Bubu when Windows starts：控制是否开机自启动。
+- Reset first greeting：重置首次启动欢迎语，方便测试。
 
-- `DeepSeek API`
-- `Local fallback`
-
-### Bubu time
-
-选择 Bubu 使用哪个时区判断状态：
-
-- `South Africa time`
-- `China time`
-
-Bubu 会按所选时区切换待机状态：
-
-- `06:00-08:00`：刚睡醒
-- `08:00-22:00`：精神饱满
-- `22:00-06:00`：困困的
-
-### DeepSeek API Key
-
-可以在设置里填写 DeepSeek API Key，也可以在项目根目录创建 `.env.local`：
+也可以在项目根目录创建 `.env.local`：
 
 ```text
 VITE_DEEPSEEK_API_KEY=your_deepseek_key_here
@@ -166,82 +81,160 @@ VITE_DEEPSEEK_MODEL=deepseek-chat
 
 `.env.local` 不会提交到 Git。
 
-### Start Bubu when Windows starts
+## 构建命令分类
 
-控制是否开机自启动。默认关闭。
-
-## 给别人安装
-
-如果要把 Bubu 安装到别人的电脑，推荐发布安装包，而不是让对方运行源码。
-
-开发者构建安装包：
+### 安装依赖
 
 ```powershell
-npm.cmd run tauri:build
+npm.cmd install
 ```
 
-生成位置：
+第一次拉取项目后运行一次。
 
-```text
-src-tauri/target/release/bundle/
-```
-
-把里面的 `.msi` 或 `.exe` 发给用户安装即可。
-
-## 更新方式
-
-Bubu 已接入 Tauri Updater。应用启动后会自动检查 GitHub Release 里的更新信息；如果发现新版本，会提示用户下载并安装。
-
-自动更新依赖这个 Release 文件：
-
-```text
-https://github.com/yedouu/Digital_Pet/releases/latest/download/latest.json
-```
-
-发布新版本时需要：
-
-1. 递增 `package.json` 和 `src-tauri/tauri.conf.json` 里的版本号。
-2. 设置签名私钥环境变量。
-3. 构建安装包。
-4. 生成 `latest.json`。
-5. 把安装包、对应 `.sig` 文件和 `latest.json` 上传到 GitHub Release。
-
-Windows PowerShell 示例：
-
-```powershell
-$env:TAURI_SIGNING_PRIVATE_KEY=(Get-Content .tauri/bubu-updater.key -Raw)
-$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD="<your_key_password>"
-npm.cmd run tauri:build
-npm.cmd run release:latest-json
-```
-
-注意：
-
-- `.tauri/bubu-updater.key` 是本机私钥，不能提交到仓库。
-- 仓库里只保存公钥，用来验证更新包来自可信来源。
-- 没有 `latest.json` 或没有新版本时，应用启动检查会安静失败，不影响正常使用。
-- Windows 安装更新时，程序可能会自动退出，这是 Tauri Windows 安装器的正常行为。
-
-## 开发者常用命令
-
-启动开发版：
+### 开发运行
 
 ```powershell
 npm.cmd run tauri:dev
 ```
 
-构建前端：
+启动 Tauri 开发版。适合平时测试功能，不会生成安装包。
+
+只启动前端网页：
+
+```powershell
+npm.cmd run dev
+```
+
+### 普通构建检查
 
 ```powershell
 npm.cmd run build
 ```
 
-构建安装包：
+执行资源准备、TypeScript 检查和前端生产构建。适合提交前快速确认前端没有类型错误。
+
+Rust/Tauri 侧检查：
 
 ```powershell
-npm.cmd run tauri:build
+cd src-tauri
+cargo check
+cd ..
 ```
 
-## 当前版本说明
+### 正式打包安装包
 
-当前稳定分支使用 Sprite 图片动画方案。Live2D 方案在独立分支中验证，不包含在当前稳定版本里。
+```powershell
+$env:TAURI_SIGNING_PRIVATE_KEY=(Get-Content .tauri\bubu-updater.key -Raw)
+$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD='bubu-update-local'
+npm.cmd run tauri:build -- --bundles nsis
+```
+
+生成 Windows NSIS 安装包，并生成自动更新所需的签名文件 `.sig`。
+
+生成位置：
+
+```text
+src-tauri/target/release/bundle/nsis/
+```
+
+### 生成自动更新文件
+
+```powershell
+npm.cmd run release:latest-json
+```
+
+生成 Tauri Updater 需要的 `latest.json`。
+
+发布 GitHub Release 时，需要上传：
+
+- `Bubu.Desktop.Pet_x.x.x_x64-setup.exe`
+- 对应的 `.sig`
+- `latest.json`
+
+### 资源处理命令
+
+```powershell
+npm.cmd run prepare-assets
+npm.cmd run slice:bubu
+npm.cmd run generate:interactions
+```
+
+这些命令用于准备和生成宠物动画资源。
+
+## 重点命令解释
+
+### 1. 签名并打包 NSIS 安装包
+
+```powershell
+$env:TAURI_SIGNING_PRIVATE_KEY=(Get-Content .tauri\bubu-updater.key -Raw)
+$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD='bubu-update-local'
+npm.cmd run tauri:build -- --bundles nsis
+```
+
+第一行：
+
+```powershell
+$env:TAURI_SIGNING_PRIVATE_KEY=(Get-Content .tauri\bubu-updater.key -Raw)
+```
+
+读取本机的 Tauri 更新签名私钥，并临时写入当前 PowerShell 窗口的环境变量。Tauri 用它给安装包生成更新签名。
+
+第二行：
+
+```powershell
+$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD='bubu-update-local'
+```
+
+设置私钥密码。这个值只在当前 PowerShell 窗口里生效。
+
+第三行：
+
+```powershell
+npm.cmd run tauri:build -- --bundles nsis
+```
+
+正式构建 Windows NSIS 安装包。`-- --bundles nsis` 的意思是把参数传给 Tauri CLI，只打包 NSIS 安装器。
+
+注意：
+
+- `.tauri/bubu-updater.key` 是私钥，不要提交到仓库。
+- 如果要让自动更新可用，安装包和 `.sig` 必须来自同一次签名构建。
+- 上传 Release 时，`latest.json` 里的下载地址必须和安装包文件名完全一致。
+
+### 2. 宠物资源处理命令
+
+```powershell
+npm.cmd run prepare-assets
+npm.cmd run slice:bubu
+npm.cmd run generate:interactions
+```
+
+`prepare-assets`：
+
+把项目需要的宠物资源准备到前端可访问的位置。平时 `npm.cmd run build` 和 `npm.cmd run tauri:dev` 会自动先运行它。
+
+`slice:bubu`：
+
+把 Bubu 的大图精灵图按网格切成单帧图片。通常只有换原始动作图、重新裁剪素材时才需要手动运行。
+
+`generate:interactions`：
+
+生成互动相关的动作帧，例如鼠标靠近、连续点击、拖动后放下等互动表情资源。通常只有修改互动素材或重新生成互动动画时才需要运行。
+
+## 自动更新流程
+
+Bubu 使用 Tauri Updater + GitHub Releases。
+
+发布新版本时：
+
+1. 修改项目版本号。
+2. 运行签名构建命令生成安装包和 `.sig`。
+3. 运行 `npm.cmd run release:latest-json` 生成 `latest.json`。
+4. 在 GitHub Release 上传安装包、`.sig` 和 `latest.json`。
+5. 用户启动旧版应用后，会自动检测到新版本并提示更新。
+
+## 给别人安装
+
+给普通用户时，不要让对方运行源码。直接把 GitHub Release 里的安装包发给对方即可。
+
+如果对方电脑上已有旧版本，运行新安装包会覆盖安装；自动更新也是下载新版安装包后完成覆盖安装。
