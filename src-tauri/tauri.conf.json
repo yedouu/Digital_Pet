@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Bubu Desktop Pet",
   "version": "0.1.3",
-  "identifier": "com.codex.desktop-pet-mvp",
+  "identifier": "com.kaijin.desktop-pet-mvp",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://127.0.0.1:1420",
@@ -32,6 +32,7 @@
     "active": true,
     "targets": "all",
     "createUpdaterArtifacts": true,
+    "publisher": "Kaijin",
     "icon": ["icons/icon.ico"],
     "windows": {
       "nsis": {
